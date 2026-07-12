@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TransitOps - Interactive System Flow & Architecture</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            dark: {
+              950: '#060913',
+              900: '#0b0f19',
+              800: '#151d30',
+              700: '#1f2b48',
+              600: '#2d3e66',
+            },
+            brand: {
+              primary: '#6366f1',
+              emerald: '#10b981',
+              amber: '#f59e0b',
+              rose: '#ef4444',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #060913;
+      background-image: radial-gradient(circle at 50% 0%, #151d30 0%, #060913 100%);
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .active-tab {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.35);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    @keyframes pulse-flow {
+      0%, 100% { opacity: 0.2; transform: scale(0.98); }
+      50% { opacity: 1; transform: scale(1.02); }
+    }
+    .animate-pulse-flow {
+      animation: pulse-flow 3s infinite ease-in-out;
+    }
+    @keyframes slide-right {
+      0% { left: 0%; opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { left: 100%; opacity: 0; }
+    }
+    .data-packet {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #10b981;
+      animation: slide-right 2.5s infinite linear;
+    }
+    .data-packet-push {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background-color: #6366f1;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #6366f1;
+      animation: slide-right 3s infinite linear;
+    }
+  </style>
+</head>
+<body class="text-slate-100 font-sans min-height-screen antialiased p-4 md:p-8">
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto space-y-8">
+    
+    <!-- Title Section -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-800 pb-6 gap-4">
+      <div>
+        <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-400 via-purple-400 to-emerald-400 bg-clip-text text-transparent">
+          TransitOps Operational Lifecycle Flow
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Interactive architectural flowchart, data structures, and state sequences for evaluation</p>
+      </div>
+      
+      <div class="flex flex-wrap gap-2 bg-dark-900 p-1 rounded-xl border border-slate-800">
+        <button onclick="showSection('architecture')" id="btn-architecture" class="active-tab px-4 py-2 rounded-lg text-xs font-bold tracking-wide transition-all duration-300">
+          ⚙️ Architecture
+        </button>
+        <button onclick="showSection('trip-flow')" id="btn-trip-flow" class="px-4 py-2 rounded-lg text-xs font-bold tracking-wide text-slate-400 hover:text-white transition-all duration-300">
+          🚚 Trip Lifecycle
+        </button>
+        <button onclick="showSection('sync-flow')" id="btn-sync-flow" class="px-4 py-2 rounded-lg text-xs font-bold tracking-wide text-slate-400 hover:text-white transition-all duration-300">
+          🔄 Offline Sync
+        </button>
+        <button onclick="showSection('push-flow')" id="btn-push-flow" class="px-4 py-2 rounded-lg text-xs font-bold tracking-wide text-slate-400 hover:text-white transition-all duration-300">
+          🔔 Push Notifications
+        </button>
+      </div>
+    </header>
+
+    <!-- SECTION: ARCHITECTURE OVERVIEW -->
+    <div id="section-architecture" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Interactive Diagram Panel -->
+        <div class="lg:col-span-2 glass-panel rounded-2xl p-6 flex flex-col justify-between min-h-[420px] relative overflow-hidden">
+          <h2 class="text-base font-bold text-white mb-6 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-indigo-500 animate-pulse"></span>
+            Interactive Pipeline Topology
+          </h2>
+          
+          <!-- Node Topology Visualization -->
+          <div class="flex flex-col md:flex-row justify-between items-center gap-8 md:gap-4 relative my-auto py-8">
+            <!-- Node 1: Client Portal -->
+            <div class="w-40 bg-dark-800 border border-slate-700/60 p-4 rounded-xl text-center relative z-10">
+              <span class="text-2xl block mb-1">💻</span>
+              <span class="text-xs font-bold text-white block">NextJS Portal</span>
+              <span class="text-[9px] text-slate-400 block mt-1">Client Frontend (Vercel)</span>
+            </div>
+            
+            <!-- Connection Line 1 -->
+            <div class="hidden md:block flex-1 h-0.5 bg-slate-800 relative">
+              <div class="data-packet" style="animation-delay: 0s;"></div>
+              <div class="data-packet" style="animation-delay: 1.2s;"></div>
+            </div>
+            
+            <!-- Node 2: Express REST API -->
+            <div class="w-40 bg-dark-800 border border-slate-700/60 p-4 rounded-xl text-center relative z-10">
+              <span class="text-2xl block mb-1">⚡</span>
+              <span class="text-xs font-bold text-indigo-400 block">Express REST API</span>
+              <span class="text-[9px] text-slate-400 block mt-1">Application Backend</span>
+            </div>
+            
+            <!-- Connection Line 2 -->
+            <div class="hidden md:block flex-1 h-0.5 bg-slate-800 relative">
+              <div class="data-packet" style="animation-delay: 0.5s;"></div>
+            </div>
+            
+            <!-- Node 3: MySQL DB -->
+            <div class="w-40 bg-dark-800 border border-slate-700/60 p-4 rounded-xl text-center relative z-10">
+              <span class="text-2xl block mb-1">🗄️</span>
+              <span class="text-xs font-bold text-emerald-400 block">MySQL DB</span>
+              <span class="text-[9px] text-slate-400 block mt-1">Persistent Engine</span>
+            </div>
+          </div>
+          
+          <div class="bg-dark-900/60 p-4 rounded-xl text-xs border border-slate-800">
+            <span class="font-bold text-slate-300">Description:</span>
+            NextJS communicates directly with the Node Express server. All authentication, role routing, trip allocations, expense reporting, and maintenance triggers are persisted in a multi-table relational MySQL instance.
+          </div>
+        </div>
+
+        <!-- System Components Checklist -->
+        <div class="glass-panel rounded-2xl p-6 space-y-4">
+          <h2 class="text-base font-bold text-white">System Highlights</h2>
+          <div class="space-y-3 text-xs text-slate-300">
+            <div class="flex items-start gap-2.5">
+              <span class="text-emerald-400">✓</span>
+              <div>
+                <strong class="text-white block">Strict RBAC Model</strong>
+                Only authorized roles (Fleet Manager, Safety Officer, Financial Analyst) can access their respective analytical dashboards.
+              </div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <span class="text-emerald-400">✓</span>
+              <div>
+                <strong class="text-white block">Offline WorkManager Queue</strong>
+                Drivers submit status logs and expenses offline. They sync instantly in chronological order once network goes live.
+              </div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <span class="text-emerald-400">✓</span>
+              <div>
+                <strong class="text-white block">OS Push Dispatches</strong>
+                Utilises standard Web Push API & VAPID keys to alert drivers when a trip is dispatched.
+              </div>
+            </div>
+            <div class="flex items-start gap-2.5">
+              <span class="text-emerald-400">✓</span>
+              <div>
+                <strong class="text-white block">Cross-Origin Exports</strong>
+                Decoupled window event printing ensures PDF reporting exports print natively in all cross-origin contexts.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION: TRIP LIFECYCLE -->
+    <div id="section-trip-flow" class="hidden space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <!-- Stage 1 -->
+        <div class="glass-panel p-4 rounded-xl border-l-4 border-slate-500">
+          <span class="text-xs font-bold text-slate-400 block uppercase">Stage 1</span>
+          <span class="text-sm font-bold text-white block mt-1">Draft Created</span>
+          <p class="text-[11px] text-slate-400 mt-2">Fleet Manager creates a trip order. System validates weight matches vehicle load capacity.</p>
+        </div>
+        <!-- Stage 2 -->
+        <div class="glass-panel p-4 rounded-xl border-l-4 border-indigo-500">
+          <span class="text-xs font-bold text-indigo-400 block uppercase">Stage 2</span>
+          <span class="text-sm font-bold text-white block mt-1">Dispatched</span>
+          <p class="text-[11px] text-slate-400 mt-2">Driver license expiry checked. Vehicle and driver status updated to "On Trip". Push notification sent.</p>
+        </div>
+        <!-- Stage 3 -->
+        <div class="glass-panel p-4 rounded-xl border-l-4 border-amber-500">
+          <span class="text-xs font-bold text-amber-500 block uppercase">Stage 3</span>
+          <span class="text-sm font-bold text-white block mt-1">En Route / Loading</span>
+          <p class="text-[11px] text-slate-400 mt-2">Driver progress updates trigger UI updates for logistics, updating transit state.</p>
+        </div>
+        <!-- Stage 4 -->
+        <div class="glass-panel p-4 rounded-xl border-l-4 border-blue-500">
+          <span class="text-xs font-bold text-blue-500 block uppercase">Stage 4</span>
+          <span class="text-sm font-bold text-white block mt-1">In Transit</span>
+          <p class="text-[11px] text-slate-400 mt-2">Driver executes delivery. Toll logs or fuel expense alerts can be logged on the fly.</p>
+        </div>
+        <!-- Stage 5 -->
+        <div class="glass-panel p-4 rounded-xl border-l-4 border-emerald-500">
+          <span class="text-xs font-bold text-emerald-400 block uppercase">Stage 5</span>
+          <span class="text-sm font-bold text-white block mt-1">Completed</span>
+          <p class="text-[11px] text-slate-400 mt-2">Final odometer validated. Driver/Vehicle set to "Available". Fuel expense registered.</p>
+        </div>
+      </div>
+      
+      <div class="glass-panel rounded-2xl p-6 space-y-4">
+        <h3 class="text-sm font-bold text-white">Database State Transitions Sequence</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs font-mono">
+            <thead>
+              <tr class="bg-dark-900 border-b border-slate-800 text-slate-400">
+                <th class="p-3">Trigger Action</th>
+                <th class="p-3">Trip Status</th>
+                <th class="p-3">Driver Status</th>
+                <th class="p-3">Vehicle Status</th>
+                <th class="p-3">Relational Side Effects</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/60 text-slate-300">
+              <tr>
+                <td class="p-3">POST /api/trips</td>
+                <td class="p-3 text-slate-400">Draft</td>
+                <td class="p-3 text-emerald-400">Available</td>
+                <td class="p-3 text-emerald-400">Available</td>
+                <td class="p-3">Checks vehicle cargo load threshold</td>
+              </tr>
+              <tr>
+                <td class="p-3">PUT /api/trips/:id/dispatch</td>
+                <td class="p-3 text-indigo-400">Dispatched</td>
+                <td class="p-3 text-blue-400">On Trip</td>
+                <td class="p-3 text-blue-400">On Trip</td>
+                <td class="p-3">Validates license expiry, VAPID push notification sent</td>
+              </tr>
+              <tr>
+                <td class="p-3">PUT /api/trips/:id/status</td>
+                <td class="p-3 text-amber-500">In Transit</td>
+                <td class="p-3 text-blue-400">On Trip</td>
+                <td class="p-3 text-blue-400">On Trip</td>
+                <td class="p-3">Updates progress stages</td>
+              </tr>
+              <tr>
+                <td class="p-3">PUT /api/trips/:id/complete</td>
+                <td class="p-3 text-emerald-400">Completed</td>
+                <td class="p-3 text-emerald-400">Available</td>
+                <td class="p-3 text-emerald-400">Available</td>
+                <td class="p-3">Odometer update validated, fuel cost expense entry logged</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION: OFFLINE SYNC -->
+    <div id="section-sync-flow" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Flow visual -->
+        <div class="lg:col-span-2 glass-panel rounded-2xl p-6 min-h-[350px] relative overflow-hidden flex flex-col justify-between">
+          <h2 class="text-base font-bold text-white mb-4">Chronological Offline Syncer</h2>
+          
+          <div class="flex flex-col md:flex-row justify-between items-center gap-6 py-6 my-auto">
+            <!-- Offline Box -->
+            <div class="w-48 bg-brand-rose/10 border border-brand-rose/30 p-4 rounded-xl text-center">
+              <span class="text-lg block">🔌 Connection Lost</span>
+              <span class="text-[10px] text-slate-400 block mt-1">Actions saved into LocalStorage Sync Queue</span>
+            </div>
+            
+            <!-- Queue representation -->
+            <div class="flex flex-col gap-1 border border-slate-800 p-2 rounded-lg bg-dark-900">
+              <span class="text-[9px] text-indigo-400 font-mono">Queue[0]: Trip: "In Transit"</span>
+              <span class="text-[9px] text-emerald-400 font-mono">Queue[1]: Expense: Toll (₹350)</span>
+            </div>
+            
+            <!-- Online Sync Box -->
+            <div class="w-48 bg-brand-emerald/10 border border-brand-emerald/30 p-4 rounded-xl text-center">
+              <span class="text-lg block">📡 Online Restored</span>
+              <span class="text-[10px] text-slate-400 block mt-1">Sequential queue processing in background</span>
+            </div>
+          </div>
+          
+          <div class="bg-dark-900/60 p-4 rounded-xl text-xs border border-slate-800">
+            <span class="font-bold text-slate-300">Sync Mechanism:</span>
+            NextJS captures connection states. While offline, all log modifications and fuel expense entries are cached. Once `navigator.onLine` fires true, the cache is read, pushed via API sequentially, and cleaned upon API validation.
+          </div>
+        </div>
+        
+        <!-- LocalStorage Schemas -->
+        <div class="glass-panel rounded-2xl p-6 space-y-4">
+          <h2 class="text-base font-bold text-white">LocalStorage Keys Structure</h2>
+          <div class="space-y-3 font-mono text-[11px]">
+            <div class="bg-dark-900 p-3 rounded-lg border border-slate-800">
+              <span class="text-indigo-400 font-bold block">transitops_pending_expenses</span>
+              <span class="text-slate-400 mt-1 block">[ { id, amount, desc, vehicleId, ... } ]</span>
+            </div>
+            <div class="bg-dark-900 p-3 rounded-lg border border-slate-800">
+              <span class="text-amber-500 font-bold block">transitops_pending_status_updates</span>
+              <span class="text-slate-400 mt-1 block">[ { tripId, status, timestamp } ]</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION: PUSH NOTIFICATIONS -->
+    <div id="section-push-flow" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Push visual -->
+        <div class="lg:col-span-2 glass-panel rounded-2xl p-6 min-h-[380px] relative overflow-hidden flex flex-col justify-between">
+          <h2 class="text-base font-bold text-white mb-4">VAPID Push Pipeline Flow</h2>
+          
+          <div class="flex flex-col md:flex-row justify-between items-center gap-6 py-6 my-auto relative">
+            <!-- Manager Node -->
+            <div class="w-36 bg-dark-800 border border-slate-700/60 p-3 rounded-xl text-center relative z-10">
+              <span class="text-xs font-bold block text-indigo-400">1. Manager Dispatch</span>
+              <span class="text-[9px] text-slate-400 block mt-1">Triggers POST request</span>
+            </div>
+            
+            <!-- Connection -->
+            <div class="hidden md:block flex-1 h-0.5 bg-slate-800 relative">
+              <div class="data-packet-push" style="animation-delay: 0s;"></div>
+            </div>
+            
+            <!-- Server web-push Node -->
+            <div class="w-36 bg-dark-800 border border-slate-700/60 p-3 rounded-xl text-center relative z-10">
+              <span class="text-xs font-bold block text-emerald-400">2. backend web-push</span>
+              <span class="text-[9px] text-slate-400 block mt-1">Resolves keys from MySQL DB</span>
+            </div>
+            
+            <!-- Connection -->
+            <div class="hidden md:block flex-1 h-0.5 bg-slate-800 relative">
+              <div class="data-packet-push" style="animation-delay: 1.5s;"></div>
+            </div>
+            
+            <!-- Service Worker Node -->
+            <div class="w-36 bg-dark-800 border border-slate-700/60 p-3 rounded-xl text-center relative z-10">
+              <span class="text-xs font-bold block text-amber-500">3. Service Worker</span>
+              <span class="text-[9px] text-slate-400 block mt-1">Triggers OS notification</span>
+            </div>
+          </div>
+          
+          <div class="bg-dark-900/60 p-4 rounded-xl text-xs border border-slate-800">
+            <span class="font-bold text-slate-300">Workflow:</span>
+            When the driver logs in, the portal registers `sw.js` and requests permissions. It gets the subscription object and saves it via `POST /api/push/subscribe`. On dispatch, the server calls `web-push` using these keys to wake the worker and display native alerts.
+          </div>
+        </div>
+        
+        <!-- Registration Snippet -->
+        <div class="glass-panel rounded-2xl p-6 space-y-4">
+          <h2 class="text-base font-bold text-white">Database Table Reference</h2>
+          <div class="bg-dark-900 p-4 rounded-lg border border-slate-800 text-[10px] font-mono text-emerald-300">
+            <pre>
+CREATE TABLE push_subscriptions (
+  id VARCHAR(36) PRIMARY KEY,
+  userId VARCHAR(64) NOT NULL,
+  endpoint TEXT NOT NULL,
+  p256dh TEXT NOT NULL,
+  auth TEXT NOT NULL,
+  createdAt DATETIME DEFAULT NOW()
+);
+            </pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showSection(sectionId) {
+      // Hide all sections
+      document.getElementById('section-architecture').classList.add('hidden');
+      document.getElementById('section-trip-flow').classList.add('hidden');
+      document.getElementById('section-sync-flow').classList.add('hidden');
+      document.getElementById('section-push-flow').classList.add('hidden');
+      
+      // Remove active class from buttons
+      document.getElementById('btn-architecture').className = 'px-4 py-2 rounded-lg text-xs font-bold tracking-wide text-slate-400 hover:text-white transition-all duration-300';
+      document.getElementById('btn-trip-flow').className = 'px-4 py-2 rounded-lg text-xs font-bold tracking-wide text-slate-400 hover:text-white transition-all duration-300';
+      document.getElementById('btn-sync-flow').className = 'px-4 py-2 rounded-lg text-xs font-bold tracking-wide text-slate-400 hover:text-white transition-all duration-300';
+      document.getElementById('btn-push-flow').className = 'px-4 py-2 rounded-lg text-xs font-bold tracking-wide text-slate-400 hover:text-white transition-all duration-300';
+      
+      // Show chosen section
+      document.getElementById('section-' + sectionId).classList.remove('hidden');
+      
+      // Mark chosen button as active
+      document.getElementById('btn-' + sectionId).className = 'active-tab px-4 py-2 rounded-lg text-xs font-bold tracking-wide transition-all duration-300';
+    }
+  </script>
+</body>
+</html>
