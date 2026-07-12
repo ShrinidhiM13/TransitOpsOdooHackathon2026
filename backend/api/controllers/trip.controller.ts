@@ -259,14 +259,18 @@ export const completeTrip = async (req: Request, res: Response, next: NextFuncti
 
     // Also log to fuel_logs table since FuelLog model was specified in Step 4
     const fuelLogId = 'fuel_' + Math.floor(1000000 + Math.random() * 9000000);
+    const costPerLiter = Number((fuelCost / fuelConsumedLiters).toFixed(2));
     await conn.execute(
-      'INSERT INTO fuel_logs (id, vehicle_id, trip_id, liters, cost, log_date) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO fuel_logs (id, vehicleId, driverId, tripId, liters, costPerLiter, totalCost, odometer, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         fuelLogId,
         trip.vehicleId,
+        trip.driverId,
         trip.id,
         fuelConsumedLiters,
+        costPerLiter,
         fuelCost,
+        finalOdometer,
         new Date(),
       ]
     );
@@ -332,3 +336,42 @@ export const cancelTrip = async (req: Request, res: Response, next: NextFunction
     next(error);
   }
 };
+
+/**
+ * API Name: Get Active Trip
+ * Usecase: Retrieves the active trip for the logged-in driver or a specified driver.
+ */
+export const getActiveTrip = async (req: any, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    let driverId = '';
+    if (req.user.role === 'DRIVER') {
+      const [drivers]: any = await pool.execute('SELECT id FROM drivers WHERE userId = ?', [req.user.id]);
+      if (drivers.length === 0) {
+        return res.status(404).json({ success: false, message: 'Driver profile not found' });
+      }
+      driverId = drivers[0].id;
+    } else {
+      driverId = req.query.driverId as string;
+      if (!driverId) {
+        return res.status(400).json({ success: false, message: 'driverId query parameter is required for non-driver roles' });
+      }
+    }
+
+    const [trips]: any = await pool.execute(
+      "SELECT * FROM trips WHERE driverId = ? AND status IN ('Dispatched', 'En Route to Pickup', 'Loading Cargo', 'In Transit') ORDER BY createdAt DESC LIMIT 1",
+      [driverId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      trip: trips[0] || null,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

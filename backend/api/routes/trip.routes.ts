@@ -1,8 +1,15 @@
 import { Router } from 'express';
-import { createTrip, dispatchTrip, updateTripStatus, completeTrip, cancelTrip } from '../controllers/trip.controller';
+import { createTrip, dispatchTrip, updateTripStatus, completeTrip, cancelTrip, getActiveTrip } from '../controllers/trip.controller';
 import { authenticate, restrictTo } from '../middlewares/auth';
 
 const router = Router();
+
+/**
+ * Route: GET /api/trips/active
+ * API Name: Get Active Trip
+ * Usecase: Retrieves the active trip for the logged-in driver or a specified driver. Restricted to FLEET_MANAGER and DRIVER.
+ */
+router.get('/active', authenticate, restrictTo('FLEET_MANAGER', 'DRIVER'), getActiveTrip);
 
 /**
  * Route: POST /api/trips
