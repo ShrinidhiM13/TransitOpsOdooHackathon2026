@@ -25,17 +25,22 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-// Zomato dark palette mappings
-val DarkBg = Color(0xFF0B0F19)
-val DarkCard = Color(0xFF151D30)
-val DarkBorder = Color(0xFF2A3C64)
-val AccentBlue = Color(0xFF3B82F6)
-val AccentGreen = Color(0xFF10B981)
-val AccentAmber = Color(0xFFF59E0B)
+import com.transitops.driver.ui.SoothingSapphire
+import com.transitops.driver.ui.WildThistle
+
+// Semantic aliases using brand palette – delegates to MaterialTheme at runtime
+// (kept here as fallbacks; prefer MaterialTheme.colorScheme in composables)
+val DarkBg     = Color(0xFF1C1D22)
+val DarkCard   = Color(0xFF2B2D35)
+val DarkBorder = Color(0xFF555663)
+val AccentBlue  = Color(0xFF2F7EDA) // SoothingSapphire
+val AccentGreen = Color(0xFF2E7D32)
+val AccentAmber = Color(0xFFF57C00)
 
 @Composable
 fun DashboardScreen(
     viewModel: DriverViewModel,
+    onLogout: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -56,7 +61,8 @@ fun DashboardScreen(
                 DashboardContent(
                     driver = state.driver,
                     activeTrip = state.activeTrip,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    onLogout = onLogout
                 )
             }
             is DriverUiState.Error -> {
@@ -82,7 +88,8 @@ fun DashboardScreen(
 fun DashboardContent(
     driver: Driver,
     activeTrip: Trip?,
-    viewModel: DriverViewModel
+    viewModel: DriverViewModel,
+    onLogout: (() -> Unit)? = null
 ) {
     val scrollState = rememberScrollState()
     var showCompleteDialog by remember { mutableStateOf(false) }
@@ -103,29 +110,42 @@ fun DashboardContent(
             Column {
                 Text(
                     text = "Driver Portal",
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
                     text = driver.name,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
-            Box(
-                modifier = Modifier
-                    .background(AccentGreen.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
-                    .border(1.dp, AccentGreen.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "★ ${driver.safetyScore} Safety",
-                    color = AccentGreen,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Box(
+                    modifier = Modifier
+                        .background(AccentGreen.copy(alpha = 0.15f), RoundedCornerShape(12.dp))
+                        .border(1.dp, AccentGreen.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "★ ${driver.safetyScore} Safety",
+                        color = AccentGreen,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                if (onLogout != null) {
+                    TextButton(
+                        onClick = onLogout,
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(4.dp)
+                    ) {
+                        Text("Logout", fontSize = 11.sp, color = MaterialTheme.colorScheme.error)
+                    }
+                }
             }
         }
 

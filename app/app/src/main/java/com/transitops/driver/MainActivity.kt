@@ -7,31 +7,44 @@ import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-
+import com.transitops.driver.repository.RepositoryProvider
+import com.transitops.driver.security.TokenManager
 import com.transitops.driver.ui.DashboardScreen
+import com.transitops.driver.ui.LoginScreen
+import com.transitops.driver.ui.TransitOpsTheme
 import com.transitops.driver.viewmodel.DriverViewModel
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var tokenManager: TokenManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
+        // Initialise TokenManager for secure encrypted storage
+        tokenManager = TokenManager(this)
+
+        // Wire the token manager into Retrofit's auth interceptor
+        RepositoryProvider.init(tokenManager)
+
+        // Request overlay permission for fullscreen dispatch pop-ups
         checkOverlayPermission()
 
         setContent {
-            MaterialTheme {
+            val systemDark = isSystemInDarkTheme()
+
+            TransitOpsTheme(darkTheme = systemDark) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    DashboardScreen(viewModel = DriverViewModel())
+                    TransitOpsApp(tokenManager = tokenManager)
                 }
             }
         }
@@ -54,10 +67,30 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Root composable that manages authentication state.
+ * Switches between LoginScreen and DashboardScreen based on whether
+ * a valid JWT token is stored in the secure TokenManager.
+ */
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Welcome to $name!\nStep 1 project initialized successfully.",
-        modifier = modifier.padding(16.dp)
-    )
+fun TransitOpsApp(tokenManager: TokenManager) {
+    // Initialise from secure storage – start logged-in if a token exists
+    var isAuthenticated by remember { mutableStateOf(tokenManager.isLoggedIn()) }
+
+    if (isAuthenticated) {
+        DashboardScreen(
+            viewModel = DriverViewModel(),
+            onLogout = {
+                tokenManager.clearToken()
+                isAuthenticated = false
+            }
+        )
+    } else {
+        LoginScreen(
+            onLoginSuccess = { token ->
+                tokenManager.saveToken(token)
+                isAuthenticated = true
+            }
+        )
+    }
 }
