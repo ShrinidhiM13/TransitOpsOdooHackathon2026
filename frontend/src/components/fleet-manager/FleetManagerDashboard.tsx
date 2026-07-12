@@ -166,6 +166,31 @@ export default function FleetManagerDashboard({ token }: Props) {
     window.open(`${API_BASE}/api/analytics/export/pdf?token=${token}`, '_blank');
   };
 
+  const handleExportCSV = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/analytics/export`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!res.ok) {
+        throw new Error('Failed to export CSV');
+      }
+      const text = await res.text();
+      const blob = new Blob([text], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'transitops-performance-report.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      showMsg('error', err.message || 'Failed to export CSV');
+    }
+  };
+
   const filteredVehicles = vehicles.filter(v =>
     !vehSearch || v.registrationNumber.toLowerCase().includes(vehSearch.toLowerCase()) || v.model.toLowerCase().includes(vehSearch.toLowerCase())
   );
@@ -200,9 +225,9 @@ export default function FleetManagerDashboard({ token }: Props) {
           <button onClick={handleExportPDF} className="btn btn-secondary" style={{ width: 'auto', padding: '0.4rem 0.75rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
             <FileDown size={13} /> PDF Report
           </button>
-          <a href={`${API_BASE}/api/analytics/export`} download className="btn btn-primary" style={{ width: 'auto', padding: '0.4rem 0.75rem', fontSize: '0.8rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+          <button onClick={handleExportCSV} className="btn btn-primary" style={{ width: 'auto', padding: '0.4rem 0.75rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
             <FileDown size={13} /> CSV Export
-          </a>
+          </button>
         </div>
       </div>
 
