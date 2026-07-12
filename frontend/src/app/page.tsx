@@ -33,7 +33,7 @@ import {
 
 const API_BASE = typeof window !== 'undefined'
   ? (window.location.hostname === 'localhost' ? 'http://localhost:3000' : '')
-  : 'http://localhost:3000';
+  : '';
 
 const STORAGE_KEYS = {
   TOKEN: 'transitops_driver_token',
