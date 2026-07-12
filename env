@@ -1,0 +1,7 @@
+DB_HOST="193.203.184.211"
+DB_USER="u508697926_transitops"
+DB_PASSWORD="nKP$u~:5|"
+DB_NAME="u508697926_transitops"
+DB_PORT=3306
+JWT_SECRET="transitops-super-secret-key-2026-hackathon"
+PORT=3000
