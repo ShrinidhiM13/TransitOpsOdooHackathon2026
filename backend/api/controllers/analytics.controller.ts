@@ -7,14 +7,76 @@ import pool from '../config/db';
  */
 export const getKPIs = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const [[{ activeVehicles }]]: any = await pool.execute("SELECT COUNT(*) AS activeVehicles FROM vehicles WHERE status = 'On Trip'");
-    const [[{ availableVehicles }]]: any = await pool.execute("SELECT COUNT(*) AS availableVehicles FROM vehicles WHERE status = 'Available'");
-    const [[{ vehiclesInMaintenance }]]: any = await pool.execute("SELECT COUNT(*) AS vehiclesInMaintenance FROM vehicles WHERE status = 'In Shop'");
-    const [[{ activeTrips }]]: any = await pool.execute(
-      "SELECT COUNT(*) AS activeTrips FROM trips WHERE status IN ('Dispatched', 'En Route to Pickup', 'Loading Cargo', 'In Transit')"
+    const { vehicleType, status: statusParam, region } = req.query;
+
+    let whereClause = 'WHERE 1=1';
+    const params: any[] = [];
+
+    if (vehicleType) {
+      whereClause += ' AND type = ?';
+      params.push(vehicleType);
+    }
+    if (statusParam) {
+      whereClause += ' AND status = ?';
+      params.push(statusParam);
+    }
+    if (region) {
+      whereClause += ' AND region = ?';
+      params.push(region);
+    }
+
+    const [[{ activeVehicles }]]: any = await pool.execute(
+      `SELECT COUNT(*) AS activeVehicles FROM vehicles ${whereClause} AND status = 'On Trip'`,
+      params
     );
-    const [[{ pendingTrips }]]: any = await pool.execute("SELECT COUNT(*) AS pendingTrips FROM trips WHERE status = 'Draft'");
-    const [[{ driversOnDuty }]]: any = await pool.execute("SELECT COUNT(*) AS driversOnDuty FROM drivers WHERE status IN ('Available', 'On Trip')");
+    const [[{ availableVehicles }]]: any = await pool.execute(
+      `SELECT COUNT(*) AS availableVehicles FROM vehicles ${whereClause} AND status = 'Available'`,
+      params
+    );
+    const [[{ vehiclesInMaintenance }]]: any = await pool.execute(
+      `SELECT COUNT(*) AS vehiclesInMaintenance FROM vehicles ${whereClause} AND status = 'In Shop'`,
+      params
+    );
+
+    let tripWhere = "WHERE status IN ('Dispatched', 'En Route to Pickup', 'Loading Cargo', 'In Transit')";
+    const tripParams: any[] = [];
+    if (vehicleType || region) {
+      tripWhere = `t JOIN vehicles v ON t.vehicleId = v.id WHERE t.status IN ('Dispatched', 'En Route to Pickup', 'Loading Cargo', 'In Transit')`;
+      if (vehicleType) {
+        tripWhere += ' AND v.type = ?';
+        tripParams.push(vehicleType);
+      }
+      if (region) {
+        tripWhere += ' AND v.region = ?';
+        tripParams.push(region);
+      }
+    }
+    const [[{ activeTrips }]]: any = await pool.execute(
+      `SELECT COUNT(*) AS activeTrips FROM trips ${tripWhere}`,
+      tripParams
+    );
+
+    let pendingWhere = "WHERE status = 'Draft'";
+    const pendingParams: any[] = [];
+    if (vehicleType || region) {
+      pendingWhere = `t JOIN vehicles v ON t.vehicleId = v.id WHERE t.status = 'Draft'`;
+      if (vehicleType) {
+        pendingWhere += ' AND v.type = ?';
+        pendingParams.push(vehicleType);
+      }
+      if (region) {
+        pendingWhere += ' AND v.region = ?';
+        pendingParams.push(region);
+      }
+    }
+    const [[{ pendingTrips }]]: any = await pool.execute(
+      `SELECT COUNT(*) AS pendingTrips FROM trips ${pendingWhere}`,
+      pendingParams
+    );
+
+    const [[{ driversOnDuty }]]: any = await pool.execute(
+      "SELECT COUNT(*) AS driversOnDuty FROM drivers WHERE status IN ('Available', 'On Trip')"
+    );
 
     const totalFleet = activeVehicles + availableVehicles;
     const fleetUtilizationPercent = totalFleet > 0 ? parseFloat(((activeVehicles / totalFleet) * 100).toFixed(1)) : 0.0;
@@ -64,10 +126,11 @@ export const getPerformance = async (req: Request, res: Response, next: NextFunc
         .reduce((acc: number, e: any) => acc + Number(e.amount), 0);
 
       const totalOperationalCost = totalFuelCost + totalMaintCost + totalOtherCost;
-      const revenue = totalDistance * 120; // Freight pricing rate (₹120/km)
+      const revenue = totalDistance * 120; // Freight rate (₹120/km)
 
+      // ROI = (Revenue - (Maintenance + Fuel)) / Acquisition Cost * 100
       const roiPercent = Number(v.acquisitionCost) > 0 
-        ? parseFloat((((revenue - totalOperationalCost) / Number(v.acquisitionCost)) * 100).toFixed(2)) 
+        ? parseFloat((((revenue - (totalMaintCost + totalFuelCost)) / Number(v.acquisitionCost)) * 100).toFixed(2)) 
         : 0.0;
 
       const fleetUtilizationPercent = completedTripsCount > 0 ? 85.0 : 0.0;
