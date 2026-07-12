@@ -1,0 +1,490 @@
+{
+  "info": {
+    "title": "TransitOps REST API Specification",
+    "description": "REST API endpoints for the TransitOps Fleet Operations Platform. Configured with Indian localization (INR currency, +91 contact prefixes, and MH region plates).",
+    "version": "1.0.0",
+    "auth": "JWT Bearer Token in Authorization header (e.g., Bearer <token>)"
+  },
+  "endpoints": [
+    {
+      "module": "Authentication",
+      "action": "User Login",
+      "method": "POST",
+      "url": "/api/auth/login",
+      "description": "Authenticates user using email & password, returning a JWT token.",
+      "request": {
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "email": "manager@transitops.in",
+          "password": "SecurePassword123"
+        }
+      },
+      "responses": {
+        "200_OK": {
+          "description": "User successfully authenticated.",
+          "body": {
+            "success": true,
+            "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            "user": {
+              "id": "usr_90218392",
+              "name": "Priya Sharma",
+              "email": "manager@transitops.in",
+              "role": "FLEET_MANAGER"
+            }
+          }
+        },
+        "401_Unauthorized": {
+          "description": "Invalid login details.",
+          "body": {
+            "success": false,
+            "message": "Invalid email or password"
+          }
+        }
+      }
+    },
+    {
+      "module": "Authentication",
+      "action": "Get Current Session",
+      "method": "GET",
+      "url": "/api/auth/me",
+      "description": "Fetches current logged in user details using their session JWT token.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>"
+        }
+      },
+      "responses": {
+        "200_OK": {
+          "description": "Current user profile fetched successfully.",
+          "body": {
+            "success": true,
+            "user": {
+              "id": "usr_90218392",
+              "name": "Priya Sharma",
+              "email": "manager@transitops.in",
+              "role": "FLEET_MANAGER"
+            }
+          }
+        }
+      }
+    },
+    {
+      "module": "Dashboard",
+      "action": "Get KPIs",
+      "method": "GET",
+      "url": "/api/dashboard/kpis",
+      "description": "Returns high-level operational statistics (utilization, active trips, status summaries). Supports filtering by type and region.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>"
+        },
+        "queryParams": {
+          "vehicleType": "VAN (Optional)",
+          "region": "West India (Optional)"
+        }
+      },
+      "responses": {
+        "200_OK": {
+          "body": {
+            "success": true,
+            "data": {
+              "activeVehicles": 12,
+              "availableVehicles": 25,
+              "vehiclesInMaintenance": 3,
+              "activeTrips": 12,
+              "pendingTrips": 5,
+              "driversOnDuty": 15,
+              "fleetUtilizationPercent": 76.5
+            }
+          }
+        }
+      }
+    },
+    {
+      "module": "Vehicle Registry",
+      "action": "List Vehicles",
+      "method": "GET",
+      "url": "/api/vehicles",
+      "description": "Retrieve list of all registered vehicles with optional filters.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>"
+        },
+        "queryParams": {
+          "status": "Available (Optional)",
+          "type": "VAN (Optional)",
+          "search": "MH-12-PQ-1234 (Optional)"
+        }
+      },
+      "responses": {
+        "200_OK": {
+          "body": {
+            "success": true,
+            "vehicles": [
+              {
+                "id": "veh_0912380",
+                "registrationNumber": "MH-12-PQ-1234",
+                "model": "Tata Winger 2023",
+                "type": "VAN",
+                "maxLoadCapacity": 500,
+                "odometer": 12450.5,
+                "acquisitionCost": 1500000.0,
+                "status": "Available",
+                "region": "West India"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "module": "Vehicle Registry",
+      "action": "Register Vehicle",
+      "method": "POST",
+      "url": "/api/vehicles",
+      "description": "Registers a new vehicle in the system. Registration number must be unique.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "registrationNumber": "MH-12-PQ-1234",
+          "model": "Tata Winger 2023",
+          "type": "VAN",
+          "maxLoadCapacity": 500,
+          "odometer": 12000,
+          "acquisitionCost": 1500000.0,
+          "region": "West India"
+        }
+      },
+      "responses": {
+        "201_Created": {
+          "body": {
+            "success": true,
+            "message": "Vehicle registered successfully",
+            "vehicle": {
+              "id": "veh_0912380",
+              "registrationNumber": "MH-12-PQ-1234",
+              "status": "Available"
+            }
+          }
+        }
+      }
+    },
+    {
+      "module": "Driver Management",
+      "action": "List Drivers",
+      "method": "GET",
+      "url": "/api/drivers",
+      "description": "Retrieves list of drivers with filtering options.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>"
+        },
+        "queryParams": {
+          "status": "Available (Optional)",
+          "search": "Rahul (Optional)"
+        }
+      },
+      "responses": {
+        "200_OK": {
+          "body": {
+            "success": true,
+            "drivers": [
+              {
+                "id": "drv_102938",
+                "name": "Rahul Sharma",
+                "licenseNumber": "MH-12-2023-0045678",
+                "licenseCategory": "MCWG/LMV",
+                "licenseExpiryDate": "2027-12-31T00:00:00.000Z",
+                "contactNumber": "+919876543210",
+                "safetyScore": 95.5,
+                "status": "Available"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "module": "Driver Management",
+      "action": "Register Driver",
+      "method": "POST",
+      "url": "/api/drivers",
+      "description": "Registers a new driver. Compliance checks apply to the license expiration date.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "name": "Rahul Sharma",
+          "licenseNumber": "MH-12-2023-0045678",
+          "licenseCategory": "MCWG/LMV",
+          "licenseExpiryDate": "2027-12-31",
+          "contactNumber": "+919876543210",
+          "safetyScore": 100.0
+        }
+      },
+      "responses": {
+        "201_Created": {
+          "body": {
+            "success": true,
+            "message": "Driver registered successfully",
+            "driver": {
+              "id": "drv_102938",
+              "status": "Available"
+            }
+          }
+        }
+      }
+    },
+    {
+      "module": "Trip Management",
+      "action": "Create Trip Draft",
+      "method": "POST",
+      "url": "/api/trips",
+      "description": "Creates a draft dispatch order. Validates vehicle load limits.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "source": "Warehouse Alpha, Mumbai",
+          "destination": "Retail Outlet 4, Pune",
+          "vehicleId": "veh_0912380",
+          "driverId": "drv_102938",
+          "cargoWeight": 450,
+          "plannedDistance": 150.0
+        }
+      },
+      "responses": {
+        "201_Created": {
+          "body": {
+            "success": true,
+            "message": "Trip created as draft",
+            "trip": {
+              "id": "trp_890123",
+              "status": "Draft"
+            }
+          }
+        },
+        "400_BadRequest": {
+          "description": "Cargo limit exceeded.",
+          "body": {
+            "success": false,
+            "message": "Cargo weight exceeds vehicle capacity"
+          }
+        }
+      }
+    },
+    {
+      "module": "Trip Management",
+      "action": "Dispatch Trip",
+      "method": "PUT",
+      "url": "/api/trips/:id/dispatch",
+      "description": "Dispatches a trip. Updates driver/vehicle statuses to 'On Trip' and sends push alerts to driver.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>"
+        }
+      },
+      "responses": {
+        "200_OK": {
+          "body": {
+            "success": true,
+            "message": "Trip dispatched successfully. Driver and vehicle status set to 'On Trip'."
+          }
+        }
+      }
+    },
+    {
+      "module": "Trip Management",
+      "action": "Update Intermediate Status",
+      "method": "PUT",
+      "url": "/api/trips/:id/status",
+      "description": "Updates Zomato-style intermediate states during active delivery route.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "status": "En Route to Pickup | Loading Cargo | In Transit"
+        }
+      },
+      "responses": {
+        "200_OK": {
+          "body": {
+            "success": true,
+            "message": "Trip status updated successfully."
+          }
+        }
+      }
+    },
+    {
+      "module": "Trip Management",
+      "action": "Complete Trip",
+      "method": "PUT",
+      "url": "/api/trips/:id/complete",
+      "description": "Completes active trip, logs odometer increments and fuel expenses, and restores driver/vehicle statuses to 'Available'.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "finalOdometer": 12600.5,
+          "fuelConsumedLiters": 20.0,
+          "fuelCost": 2100.00
+        }
+      },
+      "responses": {
+        "200_OK": {
+          "body": {
+            "success": true,
+            "message": "Trip completed successfully. Driver and vehicle status set to 'Available'."
+          }
+        }
+      }
+    },
+    {
+      "module": "Trip Management",
+      "action": "Cancel Trip",
+      "method": "PUT",
+      "url": "/api/trips/:id/cancel",
+      "description": "Cancels active trip and restores vehicle/driver status to 'Available'.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>"
+        }
+      },
+      "responses": {
+        "200_OK": {
+          "body": {
+            "success": true,
+            "message": "Trip cancelled. Vehicle and driver status restored."
+          }
+        }
+      }
+    },
+    {
+      "module": "Maintenance Log",
+      "action": "Open Maintenance Log",
+      "method": "POST",
+      "url": "/api/maintenance",
+      "description": "Registers vehicle in shop. Vehicle status automatically changes to 'In Shop', removing it from dispatch.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "vehicleId": "veh_0912380",
+          "description": "Routine 10k Oil Change and Brake Inspection",
+          "type": "Scheduled",
+          "cost": 5000.00,
+          "startDate": "2026-07-12"
+        }
+      },
+      "responses": {
+        "201_Created": {
+          "body": {
+            "success": true,
+            "message": "Maintenance log created. Vehicle marked 'In Shop'."
+          }
+        }
+      }
+    },
+    {
+      "module": "Maintenance Log",
+      "action": "Close Maintenance Log",
+      "method": "PUT",
+      "url": "/api/maintenance/:id/close",
+      "description": "Closes repair log, logs final costs, and restores vehicle to 'Available'.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "endDate": "2026-07-13",
+          "finalCost": 6500.00,
+          "notes": "Replaced front brake pads."
+        }
+      },
+      "responses": {
+        "200_OK": {
+          "body": {
+            "success": true,
+            "message": "Maintenance log resolved. Vehicle status restored."
+          }
+        }
+      }
+    },
+    {
+      "module": "Expense Management",
+      "action": "Record Expense",
+      "method": "POST",
+      "url": "/api/expenses",
+      "description": "Records additional expenses like tolls, road incidents, or parking fees.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>",
+          "Content-Type": "application/json"
+        },
+        "body": {
+          "vehicleId": "veh_0912380",
+          "tripId": "trp_890123",
+          "amount": 320.00,
+          "category": "Toll",
+          "description": "Mumbai-Pune Expressway Toll",
+          "date": "2026-07-12"
+        }
+      },
+      "responses": {
+        "201_Created": {
+          "body": {
+            "success": true,
+            "message": "Expense recorded successfully."
+          }
+        }
+      }
+    },
+    {
+      "module": "Reports & Analytics",
+      "action": "Get Performance Report",
+      "method": "GET",
+      "url": "/api/analytics/performance",
+      "description": "Provides ROI, utilization percentages, and operating costs per vehicle.",
+      "request": {
+        "headers": {
+          "Authorization": "Bearer <token>"
+        }
+      },
+      "responses": {
+        "200_OK": {
+          "body": {
+            "success": true,
+            "report": {
+              "vehicles": [
+                {
+                  "vehicleId": "veh_0912380",
+                  "registrationNumber": "MH-12-PQ-1234",
+                  "fuelEfficiencyKml": 7.5,
+                  "fleetUtilizationPercent": 85.0,
+                  "totalOperationalCost": 8920.0,
+                  "roiPercent": 15.8
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}
