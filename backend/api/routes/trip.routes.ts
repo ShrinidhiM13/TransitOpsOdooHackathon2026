@@ -1,8 +1,15 @@
 import { Router } from 'express';
-import { createTrip, dispatchTrip, updateTripStatus, completeTrip, cancelTrip, getActiveTrip } from '../controllers/trip.controller';
+import { createTrip, dispatchTrip, updateTripStatus, completeTrip, cancelTrip, getActiveTrip, listTrips } from '../controllers/trip.controller';
 import { authenticate, restrictTo } from '../middlewares/auth';
 
 const router = Router();
+
+/**
+ * Route: GET /api/trips
+ * API Name: List Trips
+ * Usecase: Retrieves all registered trips with joined details. Restricted to FLEET_MANAGER and FINANCIAL_ANALYST.
+ */
+router.get('/', authenticate, restrictTo('FLEET_MANAGER', 'FINANCIAL_ANALYST'), listTrips);
 
 /**
  * Route: GET /api/trips/active

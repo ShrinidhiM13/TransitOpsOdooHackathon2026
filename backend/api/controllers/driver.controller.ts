@@ -16,7 +16,9 @@ const driverRegisterSchema = z.object({
   password: z.string().min(6).optional(),
 });
 
-const driverUpdateSchema = driverRegisterSchema.partial();
+const driverUpdateSchema = driverRegisterSchema.partial().extend({
+  status: z.enum(['Available', 'On Trip', 'Off Duty', 'Suspended']).optional(),
+});
 
 /**
  * API Name: List Drivers

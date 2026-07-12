@@ -375,3 +375,25 @@ export const getActiveTrip = async (req: any, res: Response, next: NextFunction)
   }
 };
 
+/**
+ * API Name: List Trips
+ * Usecase: Retrieves all registered trips with joined driver names and vehicle registrations.
+ */
+export const listTrips = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const [rows]: any = await pool.execute(
+      `SELECT t.*, d.name AS driverName, v.registrationNumber AS vehicleReg 
+       FROM trips t 
+       LEFT JOIN drivers d ON t.driverId = d.id 
+       LEFT JOIN vehicles v ON t.vehicleId = v.id 
+       ORDER BY t.createdAt DESC`
+    );
+    return res.status(200).json({
+      success: true,
+      trips: rows,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
