@@ -12,9 +12,9 @@ import Alert from '@/components/common/Alert';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ChartPanel from '@/components/charts/ChartPanel';
 
-interface Props { token: string; }
+interface Props { token: string; refreshTrigger?: number; }
 
-export default function FinancialAnalystDashboard({ token }: Props) {
+export default function FinancialAnalystDashboard({ token, refreshTrigger }: Props) {
   const api = useApi(token);
   const [activeTab, setActiveTab] = useState('overview');
   const [kpi, setKpi] = useState<KPIData | null>(null);
@@ -54,7 +54,7 @@ export default function FinancialAnalystDashboard({ token }: Props) {
     setChartLoading(false);
   }, []); // eslint-disable-line
 
-  useEffect(() => { fetchAll(); fetchCharts(); }, []); // eslint-disable-line
+  useEffect(() => { fetchAll(); fetchCharts(); }, [refreshTrigger]); // eslint-disable-line
 
   const TABS = [
     { key: 'overview', label: 'Financial Overview', icon: <TrendingUp size={14} /> },

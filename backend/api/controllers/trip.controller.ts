@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import pool from '../config/db';
 import { sendPushToUser } from '../services/pushNotification.service';
+import { broadcast } from '../services/websocket.service';
 
 const tripCreateSchema = z.object({
   source: z.string().min(1),
@@ -163,6 +164,7 @@ export const dispatchTrip = async (req: Request, res: Response, next: NextFuncti
     conn.release();
 
     const [updatedTrips]: any = await pool.execute('SELECT * FROM trips WHERE id = ?', [id]);
+    broadcast('TRIP_UPDATED', { tripId: id, status: 'Dispatched', driverId: trip.driverId, vehicleId: trip.vehicleId });
 
     // Fire-and-forget push notification to the driver (non-blocking)
     if (driver.userId) {
@@ -203,6 +205,7 @@ export const updateTripStatus = async (req: Request, res: Response, next: NextFu
     await pool.execute('UPDATE trips SET status = ? WHERE id = ?', [status, id]);
 
     const [updatedTrips]: any = await pool.execute('SELECT * FROM trips WHERE id = ?', [id]);
+    broadcast('TRIP_UPDATED', { tripId: id, status, driverId: updatedTrips[0]?.driverId, vehicleId: updatedTrips[0]?.vehicleId });
 
     return res.status(200).json({
       success: true,
@@ -295,6 +298,7 @@ export const completeTrip = async (req: Request, res: Response, next: NextFuncti
     conn.release();
 
     const [updatedTrips]: any = await pool.execute('SELECT * FROM trips WHERE id = ?', [id]);
+    broadcast('TRIP_UPDATED', { tripId: id, status: 'Completed', driverId: trip.driverId, vehicleId: trip.vehicleId });
 
     return res.status(200).json({
       success: true,
@@ -335,6 +339,7 @@ export const cancelTrip = async (req: Request, res: Response, next: NextFunction
     conn.release();
 
     const [updatedTrips]: any = await pool.execute('SELECT * FROM trips WHERE id = ?', [id]);
+    broadcast('TRIP_UPDATED', { tripId: id, status: 'Cancelled', driverId: trip.driverId, vehicleId: trip.vehicleId });
 
     return res.status(200).json({
       success: true,

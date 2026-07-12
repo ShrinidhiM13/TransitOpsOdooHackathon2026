@@ -10,9 +10,9 @@ import Alert from '@/components/common/Alert';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { SafetyScoreChart } from '@/components/charts/ChartPanel';
 
-interface Props { token: string; }
+interface Props { token: string; refreshTrigger?: number; }
 
-export default function SafetyOfficerDashboard({ token }: Props) {
+export default function SafetyOfficerDashboard({ token, refreshTrigger }: Props) {
   const api = useApi(token);
   const [activeTab, setActiveTab] = useState('overview');
   const [safetyReport, setSafetyReport] = useState<SafetyReport | null>(null);
@@ -40,7 +40,7 @@ export default function SafetyOfficerDashboard({ token }: Props) {
     setLoading(false);
   }, []); // eslint-disable-line
 
-  useEffect(() => { fetchAll(); }, []); // eslint-disable-line
+  useEffect(() => { fetchAll(); }, [refreshTrigger]); // eslint-disable-line
 
   const toggleSuspension = async (driver: DriverProfile) => {
     const nextStatus = driver.status === 'Suspended' ? 'Available' : 'Suspended';

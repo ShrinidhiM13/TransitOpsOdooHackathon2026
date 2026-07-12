@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import pool from '../config/db';
+import { broadcast } from '../services/websocket.service';
 
 const vehicleRegisterSchema = z.object({
   registrationNumber: z.string().regex(/^[A-Z]{2}-\d{2}-[A-Z]{1,3}-\d{4}$/, {
@@ -97,6 +98,7 @@ export const registerVehicle = async (req: Request, res: Response, next: NextFun
     );
 
     const [rows]: any = await pool.execute('SELECT * FROM vehicles WHERE id = ?', [randomId]);
+    broadcast('VEHICLE_UPDATED', { vehicleId: randomId, vehicle: rows[0] });
 
     return res.status(201).json({
       success: true,
@@ -145,6 +147,7 @@ export const updateVehicle = async (req: Request, res: Response, next: NextFunct
     }
 
     const [rows]: any = await pool.execute('SELECT * FROM vehicles WHERE id = ?', [id]);
+    broadcast('VEHICLE_UPDATED', { vehicleId: id, vehicle: rows[0] });
 
     return res.status(200).json({
       success: true,
@@ -186,6 +189,7 @@ export const retireVehicle = async (req: Request, res: Response, next: NextFunct
     await pool.execute("UPDATE vehicles SET status = 'Retired' WHERE id = ?", [id]);
 
     const [rows]: any = await pool.execute('SELECT * FROM vehicles WHERE id = ?', [id]);
+    broadcast('VEHICLE_UPDATED', { vehicleId: id, vehicle: rows[0] });
 
     return res.status(200).json({
       success: true,
@@ -210,6 +214,8 @@ export const deleteVehicle = async (req: Request, res: Response, next: NextFunct
     if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, message: 'Vehicle not found' });
     }
+
+    broadcast('VEHICLE_UPDATED', { vehicleId: id, deleted: true });
 
     return res.status(200).json({
       success: true,

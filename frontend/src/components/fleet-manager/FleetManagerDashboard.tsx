@@ -13,12 +13,12 @@ import Alert from '@/components/common/Alert';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ChartPanel from '@/components/charts/ChartPanel';
 
-interface Props { token: string; }
+interface Props { token: string; refreshTrigger?: number; }
 
 const REGIONS = ['West India', 'North India', 'South India', 'East India', 'Central India'];
 const LICENSE_CATS = ['MCWG/LMV', 'LMV-TR', 'HMV', 'HGV', 'HPMV', 'TRANS'];
 
-export default function FleetManagerDashboard({ token }: Props) {
+export default function FleetManagerDashboard({ token, refreshTrigger }: Props) {
   const api = useApi(token);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -73,7 +73,7 @@ export default function FleetManagerDashboard({ token }: Props) {
     setChartLoading(false);
   }, []); // eslint-disable-line
 
-  useEffect(() => { fetchAll(); fetchCharts(); }, []); // eslint-disable-line
+  useEffect(() => { fetchAll(); fetchCharts(); }, [refreshTrigger]); // eslint-disable-line
 
   // ---- Actions ----
   const handleRegisterVehicle = async (e: React.FormEvent) => {
