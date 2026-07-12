@@ -1,0 +1,65 @@
+# Antigravity Ignore File
+
+# Dependencies and caches
+node_modules/
+.npm/
+.yarn/
+.pnpm-store/
+.gradle/
+.next/
+.nuxt/
+.output/
+.svelte-kit/
+.cache/
+.parcel-cache/
+.docusaurus/
+.serverless/
+.fusebox/
+.firebase/
+.vscode-test/
+
+# Build outputs
+build/
+dist/
+out/
+bin/
+obj/
+
+# Local configuration and environment variables
+.env
+.env.*
+!.env.example
+next-env.d.ts
+.vercel/
+
+# Editor specific files and local settings
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.patch
+
+# Logs and databases
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.dynamodb/
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# OS metadata
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

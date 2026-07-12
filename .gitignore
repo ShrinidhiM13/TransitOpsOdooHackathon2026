@@ -166,3 +166,13 @@ Thumbs.db
 
 # Agent Documentation
 /agent/
+
+# Android
+.gradle/
+local.properties
+**/build/
+*.apk
+*.ap_
+*.aab
+*.keystore
+*.jks
