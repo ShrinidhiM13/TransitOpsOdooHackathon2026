@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import pool from '../config/db';
+import { broadcast } from '../services/websocket.service';
 
 const driverRegisterSchema = z.object({
   name: z.string().min(1),
@@ -123,6 +124,7 @@ export const registerDriver = async (req: Request, res: Response, next: NextFunc
     conn.release();
 
     const [rows]: any = await pool.execute('SELECT * FROM drivers WHERE id = ?', [randomId]);
+    broadcast('DRIVER_UPDATED', { driverId: randomId, driver: rows[0] });
 
     return res.status(201).json({
       success: true,
@@ -181,6 +183,7 @@ export const updateDriver = async (req: Request, res: Response, next: NextFuncti
     }
 
     const [rows]: any = await pool.execute('SELECT * FROM drivers WHERE id = ?', [id]);
+    broadcast('DRIVER_UPDATED', { driverId: id, driver: rows[0] });
 
     return res.status(200).json({
       success: true,
@@ -205,6 +208,8 @@ export const deleteDriver = async (req: Request, res: Response, next: NextFuncti
     if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, message: 'Driver not found' });
     }
+
+    broadcast('DRIVER_UPDATED', { driverId: id, deleted: true });
 
     return res.status(200).json({
       success: true,

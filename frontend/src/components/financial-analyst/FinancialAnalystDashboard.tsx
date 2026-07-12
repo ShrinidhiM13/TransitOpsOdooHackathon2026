@@ -12,9 +12,9 @@ import Alert from '@/components/common/Alert';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ChartPanel from '@/components/charts/ChartPanel';
 
-interface Props { token: string; }
+interface Props { token: string; refreshTrigger?: number; }
 
-export default function FinancialAnalystDashboard({ token }: Props) {
+export default function FinancialAnalystDashboard({ token, refreshTrigger }: Props) {
   const api = useApi(token);
   const [activeTab, setActiveTab] = useState('overview');
   const [kpi, setKpi] = useState<KPIData | null>(null);
@@ -30,7 +30,36 @@ export default function FinancialAnalystDashboard({ token }: Props) {
   const [vehSearch, setVehSearch] = useState('');
 
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [csvExporting, setCsvExporting] = useState(false);
   const showMsg = (type: 'success' | 'error', text: string) => { setMsg({ type, text }); setTimeout(() => setMsg(null), 4000); };
+
+  const handleExportCSV = async () => {
+    setCsvExporting(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/analytics/export`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showMsg('error', err.message || 'CSV export failed. Please try again.');
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `transitops-performance-report-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showMsg('success', 'CSV exported successfully!');
+    } catch (err: any) {
+      showMsg('error', 'Network error during CSV export.');
+    } finally {
+      setCsvExporting(false);
+    }
+  };
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -54,7 +83,7 @@ export default function FinancialAnalystDashboard({ token }: Props) {
     setChartLoading(false);
   }, []); // eslint-disable-line
 
-  useEffect(() => { fetchAll(); fetchCharts(); }, []); // eslint-disable-line
+  useEffect(() => { fetchAll(); fetchCharts(); }, [refreshTrigger]); // eslint-disable-line
 
   const TABS = [
     { key: 'overview', label: 'Financial Overview', icon: <TrendingUp size={14} /> },
@@ -86,9 +115,9 @@ export default function FinancialAnalystDashboard({ token }: Props) {
           <button onClick={fetchAll} className="btn btn-secondary" style={{ width: 'auto', padding: '0.4rem 0.75rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
             <RefreshCw size={13} /> Refresh
           </button>
-          <a href={`${API_BASE}/api/analytics/export`} download className="btn btn-primary" style={{ width: 'auto', padding: '0.4rem 0.75rem', fontSize: '0.8rem', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <FileDown size={13} /> Export CSV
-          </a>
+          <button onClick={handleExportCSV} disabled={csvExporting} className="btn btn-primary" style={{ width: 'auto', padding: '0.4rem 0.75rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            <FileDown size={13} /> {csvExporting ? 'Exporting...' : 'Export CSV'}
+          </button>
         </div>
       </div>
 

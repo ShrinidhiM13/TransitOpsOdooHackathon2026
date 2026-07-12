@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import pool from '../config/db';
+import { broadcast } from '../services/websocket.service';
 
 const openMaintSchema = z.object({
   vehicleId: z.string().min(1),
@@ -98,6 +99,8 @@ export const openMaintenance = async (req: Request, res: Response, next: NextFun
       [randomId]
     );
 
+    broadcast('MAINTENANCE_UPDATED', { vehicleId: body.vehicleId, maintenanceLog: rows[0] });
+
     return res.status(201).json({
       success: true,
       message: "Maintenance log created. Vehicle marked 'In Shop'.",
@@ -168,6 +171,8 @@ export const closeMaintenance = async (req: Request, res: Response, next: NextFu
        JOIN vehicles v ON m.vehicleId = v.id WHERE m.id = ?`,
       [id]
     );
+
+    broadcast('MAINTENANCE_UPDATED', { vehicleId: log.vehicleId, maintenanceLog: updatedLogs[0] });
 
     return res.status(200).json({
       success: true,

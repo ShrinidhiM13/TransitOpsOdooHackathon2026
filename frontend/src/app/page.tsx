@@ -33,6 +33,7 @@ export default function HomePortal() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [isOverlayDismissed, setIsOverlayDismissed] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Call Web Push Notification Hook for Driver
   usePushNotifications(token, user?.role);
@@ -233,6 +234,64 @@ export default function HomePortal() {
       window.removeEventListener('offline', handleOffline);
     };
   }, [fetchProfile, syncOfflineData]);
+
+  // WebSocket connection for real-time status updates
+  useEffect(() => {
+    if (!token) return;
+
+    let socket: WebSocket | null = null;
+    let reconnectTimeout: NodeJS.Timeout;
+
+    const connectWS = () => {
+      if (typeof window === 'undefined') return;
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsHost = window.location.hostname === 'localhost' ? 'localhost:3000' : window.location.host;
+      const wsUrl = `${wsProtocol}//${wsHost}/ws`;
+
+      console.log('[WebSocket Client] Connecting to', wsUrl);
+      socket = new WebSocket(wsUrl);
+
+      socket.onopen = () => {
+        console.log('[WebSocket Client] Connection established');
+      };
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('[WebSocket Client] Received event:', data);
+          
+          // Trigger a data refresh for panels
+          setRefreshTrigger((prev) => prev + 1);
+
+          // For driver: fetch active trip on status transitions or dispatches
+          if (user?.role === 'DRIVER') {
+            fetchActiveTrip(token);
+          }
+        } catch (err) {
+          console.error('[WebSocket Client] Error parsing message:', err);
+        }
+      };
+
+      socket.onclose = () => {
+        console.log('[WebSocket Client] Connection closed, scheduling reconnect...');
+        reconnectTimeout = setTimeout(connectWS, 5000);
+      };
+
+      socket.onerror = (err) => {
+        console.error('[WebSocket Client] Socket error:', err);
+      };
+    };
+
+    connectWS();
+
+    return () => {
+      if (socket) {
+        socket.onclose = null;
+        socket.close();
+      }
+      clearTimeout(reconnectTimeout);
+    };
+  }, [token, user?.role, fetchActiveTrip]);
 
   // Polling for driver status updates
   useEffect(() => {
@@ -513,13 +572,13 @@ export default function HomePortal() {
 
       <main className="container-wide" style={{ flex: 1, padding: '1.5rem' }}>
         {user?.role === 'FLEET_MANAGER' && (
-          <FleetManagerDashboard token={token} />
+          <FleetManagerDashboard token={token} refreshTrigger={refreshTrigger} />
         )}
         {user?.role === 'SAFETY_OFFICER' && (
-          <SafetyOfficerDashboard token={token} />
+          <SafetyOfficerDashboard token={token} refreshTrigger={refreshTrigger} />
         )}
         {user?.role === 'FINANCIAL_ANALYST' && (
-          <FinancialAnalystDashboard token={token} />
+          <FinancialAnalystDashboard token={token} refreshTrigger={refreshTrigger} />
         )}
         {user?.role === 'DRIVER' && user && (
           <div style={{ maxWidth: '600px', margin: '0 auto' }}>

@@ -67,13 +67,16 @@ app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/push', pushRoutes);
-// Legacy alias: /api/dashboard/kpis maps to analytics KPIs for backward compatibility
 app.get('/api/dashboard/kpis', authenticate, getKPIs);
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+import { initWebSocketServer } from './services/websocket.service';
+
+const server = app.listen(PORT, () => {
   console.log(`TransitOps Backend running on port ${PORT}`);
 });
+
+initWebSocketServer(server);
 
 export default app;
