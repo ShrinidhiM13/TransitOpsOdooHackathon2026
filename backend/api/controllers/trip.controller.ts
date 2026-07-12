@@ -362,7 +362,11 @@ export const getActiveTrip = async (req: any, res: Response, next: NextFunction)
     }
 
     const [trips]: any = await pool.execute(
-      "SELECT * FROM trips WHERE driverId = ? AND status IN ('Dispatched', 'En Route to Pickup', 'Loading Cargo', 'In Transit') ORDER BY createdAt DESC LIMIT 1",
+      `SELECT t.*, v.registrationNumber AS vehicleReg, v.model AS vehicleModel, v.type AS vehicleType, v.odometer AS vehicleOdometer 
+       FROM trips t
+       JOIN vehicles v ON t.vehicleId = v.id
+       WHERE t.driverId = ? AND t.status IN ('Dispatched', 'En Route to Pickup', 'Loading Cargo', 'In Transit') 
+       ORDER BY t.createdAt DESC LIMIT 1`,
       [driverId]
     );
 
@@ -378,16 +382,46 @@ export const getActiveTrip = async (req: any, res: Response, next: NextFunction)
 /**
  * API Name: List Trips
  * Usecase: Retrieves all registered trips with joined driver names and vehicle registrations.
+ * Supports optional filters: status, driverId, vehicleId, search (source/destination).
  */
 export const listTrips = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const [rows]: any = await pool.execute(
-      `SELECT t.*, d.name AS driverName, v.registrationNumber AS vehicleReg 
-       FROM trips t 
-       LEFT JOIN drivers d ON t.driverId = d.id 
-       LEFT JOIN vehicles v ON t.vehicleId = v.id 
-       ORDER BY t.createdAt DESC`
-    );
+    const { status, driverId, vehicleId, search, sortBy, sortOrder } = req.query;
+
+    let query = `
+      SELECT t.*, d.name AS driverName, v.registrationNumber AS vehicleReg, v.model AS vehicleModel,
+             v.type AS vehicleType
+      FROM trips t
+      LEFT JOIN drivers d ON t.driverId = d.id
+      LEFT JOIN vehicles v ON t.vehicleId = v.id
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+
+    if (status) {
+      query += ' AND t.status = ?';
+      params.push(status);
+    }
+    if (driverId) {
+      query += ' AND t.driverId = ?';
+      params.push(driverId);
+    }
+    if (vehicleId) {
+      query += ' AND t.vehicleId = ?';
+      params.push(vehicleId);
+    }
+    if (search) {
+      query += ' AND (t.source LIKE ? OR t.destination LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    const allowedSort = ['createdAt', 'plannedDistance', 'cargoWeight', 'status'];
+    const sortField = allowedSort.includes(sortBy as string) ? `t.${sortBy}` : 't.createdAt';
+    const sortDir = sortOrder === 'asc' ? 'ASC' : 'DESC';
+    query += ` ORDER BY ${sortField} ${sortDir}`;
+
+    const [rows]: any = await pool.execute(query, params);
+
     return res.status(200).json({
       success: true,
       trips: rows,

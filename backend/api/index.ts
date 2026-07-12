@@ -58,6 +58,7 @@ app.use('/api/trips', tripRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/analytics', analyticsRoutes);
+// Legacy alias: /api/dashboard/kpis maps to analytics KPIs for backward compatibility
 app.get('/api/dashboard/kpis', authenticate, getKPIs);
 
 app.use(errorHandler);

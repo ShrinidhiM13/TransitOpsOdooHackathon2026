@@ -18,11 +18,11 @@ const vehicleUpdateSchema = vehicleRegisterSchema.partial();
 
 /**
  * API Name: List Vehicles
- * Usecase: Retrieves all registered vehicles, optional filtering by status, type, or registration search.
+ * Usecase: Retrieves all registered vehicles, optional filtering by status, type, region, or registration search.
  */
 export const listVehicles = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { status, type, search } = req.query;
+    const { status, type, search, region, sortBy, sortOrder } = req.query;
     let query = 'SELECT * FROM vehicles WHERE 1=1';
     const params: any[] = [];
 
@@ -34,12 +34,19 @@ export const listVehicles = async (req: Request, res: Response, next: NextFuncti
       query += ' AND type = ?';
       params.push(type);
     }
+    if (region) {
+      query += ' AND region = ?';
+      params.push(region);
+    }
     if (search) {
-      query += ' AND registrationNumber LIKE ?';
-      params.push(`%${search}%`);
+      query += ' AND (registrationNumber LIKE ? OR model LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
     }
 
-    query += ' ORDER BY createdAt DESC';
+    const allowedSort = ['registrationNumber', 'model', 'odometer', 'acquisitionCost', 'createdAt'];
+    const sortField = allowedSort.includes(sortBy as string) ? sortBy : 'createdAt';
+    const sortDir = sortOrder === 'asc' ? 'ASC' : 'DESC';
+    query += ` ORDER BY ${sortField} ${sortDir}`;
 
     const [vehicles]: any = await pool.execute(query, params);
 
@@ -110,6 +117,12 @@ export const updateVehicle = async (req: Request, res: Response, next: NextFunct
     const { id } = req.params;
     const body = vehicleUpdateSchema.parse(req.body);
 
+    // Verify vehicle exists
+    const [existing]: any = await pool.execute('SELECT id, status FROM vehicles WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, message: 'Vehicle not found' });
+    }
+
     const fields: string[] = [];
     const params: any[] = [];
 
@@ -136,6 +149,47 @@ export const updateVehicle = async (req: Request, res: Response, next: NextFunct
     return res.status(200).json({
       success: true,
       message: 'Vehicle updated successfully',
+      vehicle: rows[0],
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * API Name: Retire Vehicle
+ * Usecase: Permanently marks a vehicle as 'Retired', removing it from the active dispatch pool.
+ *          Cannot retire a vehicle currently on a trip.
+ */
+export const retireVehicle = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+
+    const [vehicles]: any = await pool.execute('SELECT id, status FROM vehicles WHERE id = ?', [id]);
+    const vehicle = vehicles[0];
+
+    if (!vehicle) {
+      return res.status(404).json({ success: false, message: 'Vehicle not found' });
+    }
+
+    if (vehicle.status === 'On Trip') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot retire a vehicle that is currently on a trip. Complete or cancel the trip first.',
+      });
+    }
+
+    if (vehicle.status === 'Retired') {
+      return res.status(400).json({ success: false, message: 'Vehicle is already retired' });
+    }
+
+    await pool.execute("UPDATE vehicles SET status = 'Retired' WHERE id = ?", [id]);
+
+    const [rows]: any = await pool.execute('SELECT * FROM vehicles WHERE id = ?', [id]);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Vehicle has been retired and removed from the dispatch pool.',
       vehicle: rows[0],
     });
   } catch (error) {

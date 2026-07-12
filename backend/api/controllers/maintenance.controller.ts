@@ -17,6 +17,48 @@ const closeMaintSchema = z.object({
 });
 
 /**
+ * API Name: List Maintenance Logs
+ * Usecase: Retrieves all maintenance records, optionally filtered by vehicleId or status.
+ */
+export const listMaintenance = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { vehicleId, status, search } = req.query;
+
+    let query = `
+      SELECT m.*, v.registrationNumber, v.model AS vehicleModel
+      FROM maintenance_logs m
+      JOIN vehicles v ON m.vehicleId = v.id
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+
+    if (vehicleId) {
+      query += ' AND m.vehicleId = ?';
+      params.push(vehicleId);
+    }
+    if (status) {
+      query += ' AND m.status = ?';
+      params.push(status);
+    }
+    if (search) {
+      query += ' AND (m.description LIKE ? OR v.registrationNumber LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    query += ' ORDER BY m.createdAt DESC';
+
+    const [logs]: any = await pool.execute(query, params);
+
+    return res.status(200).json({
+      success: true,
+      maintenanceLogs: logs,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * API Name: Open Maintenance Record
  * Usecase: Initiates a maintenance request for a vehicle, marks vehicle status to 'In Shop' inside a transaction.
  */
@@ -27,10 +69,15 @@ export const openMaintenance = async (req: Request, res: Response, next: NextFun
 
     await conn.beginTransaction();
 
-    const [vehicles]: any = await conn.execute('SELECT id FROM vehicles WHERE id = ?', [body.vehicleId]);
+    const [vehicles]: any = await conn.execute('SELECT id, status FROM vehicles WHERE id = ?', [body.vehicleId]);
     if (vehicles.length === 0) {
       conn.release();
       return res.status(404).json({ success: false, message: 'Vehicle not found' });
+    }
+
+    if (vehicles[0].status === 'Retired') {
+      conn.release();
+      return res.status(400).json({ success: false, message: 'Cannot open maintenance for a Retired vehicle' });
     }
 
     const randomId = 'maint_' + Math.floor(1000000 + Math.random() * 9000000);
@@ -45,7 +92,11 @@ export const openMaintenance = async (req: Request, res: Response, next: NextFun
     await conn.commit();
     conn.release();
 
-    const [rows]: any = await pool.execute('SELECT * FROM maintenance_logs WHERE id = ?', [randomId]);
+    const [rows]: any = await pool.execute(
+      `SELECT m.*, v.registrationNumber, v.model AS vehicleModel FROM maintenance_logs m 
+       JOIN vehicles v ON m.vehicleId = v.id WHERE m.id = ?`,
+      [randomId]
+    );
 
     return res.status(201).json({
       success: true,
@@ -79,6 +130,11 @@ export const closeMaintenance = async (req: Request, res: Response, next: NextFu
       return res.status(404).json({ success: false, message: 'Maintenance log not found' });
     }
 
+    if (log.status === 'Closed') {
+      conn.release();
+      return res.status(400).json({ success: false, message: 'Maintenance log is already closed' });
+    }
+
     const [vehicles]: any = await conn.execute('SELECT status FROM vehicles WHERE id = ?', [log.vehicleId]);
     const vehicle = vehicles[0];
 
@@ -107,7 +163,11 @@ export const closeMaintenance = async (req: Request, res: Response, next: NextFu
     await conn.commit();
     conn.release();
 
-    const [updatedLogs]: any = await pool.execute('SELECT * FROM maintenance_logs WHERE id = ?', [id]);
+    const [updatedLogs]: any = await pool.execute(
+      `SELECT m.*, v.registrationNumber, v.model AS vehicleModel FROM maintenance_logs m
+       JOIN vehicles v ON m.vehicleId = v.id WHERE m.id = ?`,
+      [id]
+    );
 
     return res.status(200).json({
       success: true,

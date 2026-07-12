@@ -1,8 +1,16 @@
 import { Router } from 'express';
-import { openMaintenance, closeMaintenance } from '../controllers/maintenance.controller';
+import { listMaintenance, openMaintenance, closeMaintenance } from '../controllers/maintenance.controller';
 import { authenticate, restrictTo } from '../middlewares/auth';
 
 const router = Router();
+
+/**
+ * Route: GET /api/maintenance
+ * API Name: List Maintenance Logs
+ * Usecase: Retrieve all maintenance records with optional vehicleId, status, and search filters.
+ * Restricted to FLEET_MANAGER and SAFETY_OFFICER.
+ */
+router.get('/', authenticate, restrictTo('FLEET_MANAGER', 'SAFETY_OFFICER'), listMaintenance);
 
 /**
  * Route: POST /api/maintenance

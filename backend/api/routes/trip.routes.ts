@@ -7,9 +7,10 @@ const router = Router();
 /**
  * Route: GET /api/trips
  * API Name: List Trips
- * Usecase: Retrieves all registered trips with joined details. Restricted to FLEET_MANAGER and FINANCIAL_ANALYST.
+ * Usecase: Retrieves all registered trips with joined details.
+ * Restricted to FLEET_MANAGER, FINANCIAL_ANALYST, and SAFETY_OFFICER.
  */
-router.get('/', authenticate, restrictTo('FLEET_MANAGER', 'FINANCIAL_ANALYST'), listTrips);
+router.get('/', authenticate, restrictTo('FLEET_MANAGER', 'FINANCIAL_ANALYST', 'SAFETY_OFFICER'), listTrips);
 
 /**
  * Route: GET /api/trips/active
