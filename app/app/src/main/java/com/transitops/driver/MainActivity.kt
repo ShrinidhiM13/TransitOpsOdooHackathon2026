@@ -16,6 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+import com.transitops.driver.ui.DashboardScreen
+import com.transitops.driver.viewmodel.DriverViewModel
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +31,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("TransitOps Driver App")
+                    DashboardScreen(viewModel = DriverViewModel())
                 }
             }
         }
