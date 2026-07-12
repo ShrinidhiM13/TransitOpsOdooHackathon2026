@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TransitOps - Interactive Interface Mockups (India Localization)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            dark: {
+              900: '#0B0F19',
+              800: '#151D30',
+              700: '#1F2B48',
+              600: '#2A3C64',
+            },
+            primary: {
+              DEFAULT: '#3B82F6',
+              glow: '#3B82F633',
+            },
+            accent: {
+              emerald: '#10B981',
+              rose: '#F43F5E',
+              amber: '#F59E0B',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background: radial-gradient(130% 100% at 50% 0%, #151D30 0%, #0B0F19 100%);
+      min-height: 100vh;
+    }
+
+    .glass-card {
+      background: rgba(21, 29, 48, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .active-tab {
+      background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(11, 15, 25, 0.5);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(59, 130, 246, 0.3);
+      border-radius: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(59, 130, 246, 0.6);
+    }
+
+    .phone-screen {
+      background: #0B0F19;
+      height: 640px;
+      width: 320px;
+      border-radius: 36px;
+      border: 8px solid #2A3C64;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .phone-notch {
+      width: 120px;
+      height: 18px;
+      background: #2A3C64;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 12px;
+      z-index: 50;
+    }
+  </style>
+</head>
+
+<body class="text-slate-200 font-sans p-6 antialiased">
+  <!-- Top Bar Layout Selector -->
+  <header
+    class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mb-8 border-b border-slate-800 pb-6 gap-4">
+    <div>
+      <h1
+        class="text-3xl font-extrabold font-display tracking-tight bg-gradient-to-r from-blue-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent">
+        TransitOps India Mockups</h1>
+      <p class="text-sm text-slate-400 mt-1">Simultaneous preview of the Fleet Manager Web Dashboard and Driver Android
+        App with linked state simulation.</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button onclick="triggerDummyNotification()" class="bg-amber-600/20 text-amber-400 hover:bg-amber-600 hover:text-white border border-amber-800/40 px-4 py-2.5 rounded-lg text-xs font-semibold transition-all duration-200">
+        🔔 Trigger Alert Notification
+      </button>
+      <div class="flex space-x-1 bg-slate-900 p-1.5 rounded-xl border border-slate-800">
+        <button onclick="switchView('web')" id="web-btn"
+          class="active-tab px-6 py-2.5 rounded-lg text-sm font-semibold tracking-wide transition-all duration-300">Fleet
+          Manager Web</button>
+        <button onclick="switchView('app')" id="app-btn"
+          class="px-6 py-2.5 rounded-lg text-sm font-semibold tracking-wide text-slate-400 hover:text-white transition-all duration-300">Driver
+          Android App</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto">
+    <!-- ==============================================
+         FLEET MANAGER WEB DASHBOARD PREVIEW
+         ============================================== -->
+    <div id="web-view" class="space-y-6">
+
+      <!-- Role selector bar for RBAC testing -->
+      <div class="glass-card p-4 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4 border border-slate-800">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-indigo-500 animate-pulse"></span>
+          <span class="text-sm font-semibold text-slate-300">Select active simulation role for RBAC checks:</span>
+        </div>
+        <select id="rbac-role-select" onchange="changeRbacRole()" class="bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 text-xs font-semibold text-white focus:outline-none">
+          <option value="FLEET_MANAGER">Fleet Manager (Full Access)</option>
+          <option value="DRIVER">Driver (Creates trips & monitors dispatches)</option>
+          <option value="SAFETY_OFFICER">Safety Officer (Driver compliance & safety scores)</option>
+          <option value="FINANCIAL_ANALYST">Financial Analyst (Expense logs & vehicle ROI)</option>
+        </select>
+      </div>
+
+      <!-- KPI Stats Bar -->
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+        <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+          <span class="text-xs text-slate-400 font-medium">Active Vehicles</span>
+          <div class="flex justify-between items-baseline mt-2">
+            <span id="kpi-active-veh" class="text-2xl font-bold font-display text-blue-400">1</span>
+            <span class="text-[10px] text-blue-400 bg-blue-900/40 px-1.5 py-0.5 rounded">In Transit</span>
+          </div>
+        </div>
+        <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+          <span class="text-xs text-slate-400 font-medium">Available Vehicles</span>
+          <div class="flex justify-between items-baseline mt-2">
+            <span id="kpi-avail-veh" class="text-2xl font-bold font-display text-emerald-400">1</span>
+            <span class="text-[10px] text-emerald-400 bg-emerald-900/40 px-1.5 py-0.5 rounded">Ready</span>
+          </div>
+        </div>
+        <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+          <span class="text-xs text-slate-400 font-medium">In Maintenance</span>
+          <div class="flex justify-between items-baseline mt-2">
+            <span id="kpi-maint-veh" class="text-2xl font-bold font-display text-amber-500">0</span>
+            <span class="text-[10px] text-amber-500 bg-amber-900/40 px-1.5 py-0.5 rounded">In Shop</span>
+          </div>
+        </div>
+        <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+          <span class="text-xs text-slate-400 font-medium">Active Trips</span>
+          <div class="flex justify-between items-baseline mt-2">
+            <span id="kpi-active-trips" class="text-2xl font-bold font-display text-indigo-400">1</span>
+            <span class="text-[10px] text-indigo-400 bg-indigo-900/40 px-1.5 py-0.5 rounded">Live</span>
+          </div>
+        </div>
+        <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+          <span class="text-xs text-slate-400 font-medium">Pending Trips</span>
+          <div class="flex justify-between items-baseline mt-2">
+            <span id="kpi-pend-trips" class="text-2xl font-bold font-display text-slate-300">0</span>
+            <span class="text-[10px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">Draft</span>
+          </div>
+        </div>
+        <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+          <span class="text-xs text-slate-400 font-medium">Drivers On Duty</span>
+          <div class="flex justify-between items-baseline mt-2">
+            <span id="kpi-drivers-duty" class="text-2xl font-bold font-display text-blue-400">1</span>
+            <span class="text-[10px] text-blue-400 bg-blue-900/40 px-1.5 py-0.5 rounded">Assigned</span>
+          </div>
+        </div>
+        <div class="glass-card p-4 rounded-xl flex flex-col justify-between">
+          <span class="text-xs text-slate-400 font-medium">Utilization (%)</span>
+          <div class="flex justify-between items-baseline mt-2">
+            <span id="kpi-util" class="text-2xl font-bold font-display text-emerald-400">50%</span>
+            <span class="text-[10px] text-emerald-400 bg-emerald-900/40 px-1.5 py-0.5 rounded">Optimal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Operational Split -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Left Side: Dispatcher / Control Desk -->
+        <div class="lg:col-span-1 space-y-6">
+
+          <!-- Dispatch Form -->
+          <div class="glass-card p-5 rounded-2xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -z-10"></div>
+            <h3 class="text-lg font-bold font-display text-white mb-4 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+              Create Dispatch Order
+            </h3>
+
+            <form onsubmit="handleDispatch(event)" class="space-y-4 text-xs">
+              <div>
+                <label class="block text-slate-400 mb-1.5 font-medium">Select Available Vehicle</label>
+                <select id="dispatch-veh"
+                  class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                  <!-- Generated dynamically -->
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-slate-400 mb-1.5 font-medium">Select Available Driver</label>
+                <select id="dispatch-drv"
+                  class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                  <!-- Generated dynamically -->
+                </select>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-slate-400 mb-1.5 font-medium">Cargo Weight (kg)</label>
+                  <input id="dispatch-weight" type="number" placeholder="e.g. 450"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1.5 font-medium">Distance (km)</label>
+                  <input id="dispatch-dist" type="number" placeholder="e.g. 150"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-slate-400 mb-1.5 font-medium">Origin</label>
+                  <input id="dispatch-origin" type="text" placeholder="Mumbai"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1.5 font-medium">Destination</label>
+                  <input id="dispatch-dest" type="text" placeholder="Pune"
+                    class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500">
+                </div>
+              </div>
+
+              <button type="submit"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition duration-200 mt-2 shadow-lg shadow-blue-500/20 text-sm">
+                Dispatch Trip
+              </button>
+            </form>
+          </div>
+
+          <!-- Quick Maintenance Controller -->
+          <div class="glass-card p-5 rounded-2xl">
+            <h3 class="text-base font-bold font-display text-white mb-3 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+              Maintenance Controller
+            </h3>
+            <div class="space-y-3 text-xs">
+              <div>
+                <label class="block text-slate-400 mb-1 font-medium">Select Vehicle for Shop</label>
+                <div class="flex gap-2">
+                  <select id="maint-veh-select"
+                    class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none">
+                    <!-- Dynamic -->
+                  </select>
+                  <button onclick="sendToShop()"
+                    class="bg-amber-600 hover:bg-amber-700 text-white font-medium px-3 rounded-lg transition duration-150">
+                    Send to Shop
+                  </button>
+                </div>
+              </div>
+              <div id="active-maint-logs" class="space-y-2 mt-3">
+                <!-- Active Maintenance Lists -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Center & Right Side: Fleet Grid & Active Trips -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- Active Trips Monitor -->
+          <div class="glass-card p-5 rounded-2xl">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-bold font-display text-white">Active Operational Dispatches</h3>
+              <span
+                class="px-2 py-0.5 text-[10px] font-semibold text-emerald-400 bg-emerald-950 border border-emerald-800 rounded-full">Live
+                Monitor</span>
+            </div>
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-slate-900/60 text-slate-400 uppercase tracking-wider text-[10px]">
+                  <tr>
+                    <th class="p-3">Trip ID</th>
+                    <th class="p-3">Vehicle</th>
+                    <th class="p-3">Driver</th>
+                    <th class="p-3">Route</th>
+                    <th class="p-3">Weight</th>
+                    <th class="p-3">Status</th>
+                    <th class="p-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="trips-table-body" class="divide-y divide-slate-800">
+                  <!-- Mock Trips Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Vehicles & Drivers Master View -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Vehicle Registry Table -->
+            <div class="glass-card p-4 rounded-xl">
+              <div class="flex justify-between items-center mb-3">
+                <h4 class="text-sm font-bold font-display text-white">Vehicle Registry</h4>
+                <span class="text-[10px] text-slate-400">Total: <span id="veh-total">2</span></span>
+              </div>
+              <div class="overflow-y-auto max-h-52 custom-scrollbar pr-1">
+                <div id="vehicles-list" class="space-y-2">
+                  <!-- Dynamic vehicles list -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Driver Management Table -->
+            <div class="glass-card p-4 rounded-xl">
+              <div class="flex justify-between items-center mb-3">
+                <h4 class="text-sm font-bold font-display text-white">Driver Registry</h4>
+                <span class="text-[10px] text-slate-400">Total: <span id="drv-total">2</span></span>
+              </div>
+              <div class="overflow-y-auto max-h-52 custom-scrollbar pr-1">
+                <div id="drivers-list" class="space-y-2">
+                  <!-- Dynamic drivers list -->
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Financial Costing Summary (Bonus ROI) -->
+          <div class="glass-card p-5 rounded-2xl">
+            <h3 class="text-base font-bold font-display text-white mb-4">Financial ROI & Cost Analysis (INR)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                <span class="text-xs text-slate-400 block mb-1">Lifetime Fuel Costs</span>
+                <span id="summary-fuel" class="text-xl font-bold text-slate-100">₹4,500.00</span>
+              </div>
+              <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                <span class="text-xs text-slate-400 block mb-1">Lifetime Maintenance Costs</span>
+                <span id="summary-maint" class="text-xl font-bold text-slate-100">₹5,000.00</span>
+              </div>
+              <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800/80">
+                <span class="text-xs text-slate-400 block mb-1">Estimated Combined ROI</span>
+                <span id="summary-roi" class="text-xl font-bold text-emerald-400">+15.8%</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ==============================================
+         DRIVER ANDROID MOBILE APP MOCKUP PREVIEW
+         ============================================== -->
+    <div id="app-view" class="hidden flex justify-center items-center py-6">
+
+      <!-- Phone Outer Shell -->
+      <div class="phone-screen">
+        <div class="phone-notch"></div>
+
+        <!-- Fullscreen Overlay Alert (Zomato-style overlay display warning) -->
+        <div id="app-overlay-alert" class="absolute inset-0 bg-slate-950/95 flex flex-col justify-between p-6 z-50 transition-all duration-300 transform translate-y-full">
+          <div class="text-center mt-12 space-y-4">
+            <span class="w-16 h-16 bg-blue-600/20 text-blue-500 rounded-full border border-blue-500/30 flex items-center justify-center text-3xl mx-auto animate-pulse">🚚</span>
+            <div>
+              <h3 class="text-lg font-extrabold text-white tracking-wide uppercase font-display">New Order Assigned!</h3>
+              <p class="text-[10px] text-slate-400 mt-1">Overlay Display Window Active</p>
+            </div>
+          </div>
+          
+          <div class="bg-dark-800 p-4 rounded-xl border border-slate-700/60 text-xs text-left space-y-2">
+            <p><strong class="text-slate-400">From:</strong> <span id="overlay-source">Mumbai</span></p>
+            <p><strong class="text-slate-400">To:</strong> <span id="overlay-dest">Pune</span></p>
+            <p><strong class="text-slate-400">Cargo Weight:</strong> <span id="overlay-weight">450 kg</span></p>
+            <p><strong class="text-slate-400">Vehicle Plate:</strong> <span id="overlay-veh-reg">MH-12-PQ-1234</span></p>
+          </div>
+          
+          <div class="space-y-2.5 mb-8">
+            <button onclick="appAcceptOverlay()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-xs tracking-wider shadow-lg shadow-blue-500/25 uppercase">
+              Start Trip
+            </button>
+            <button onclick="appDismissOverlay()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-400 font-semibold py-2 rounded text-xs">
+              Dismiss Overlay
+            </button>
+          </div>
+        </div>
+
+        <!-- App Header -->
+        <div class="bg-dark-800 p-4 pt-6 pb-4 border-b border-slate-800 flex justify-between items-center">
+          <div>
+            <h4 class="text-xs font-semibold text-slate-400">Driver Portal</h4>
+            <h3 id="app-driver-name" class="text-sm font-bold text-white">Rahul Sharma</h3>
+          </div>
+          <div class="text-right">
+            <span class="text-[9px] block text-slate-400">Safety Score</span>
+            <span
+              class="text-xs font-bold text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-900">★
+              95.5</span>
+          </div>
+        </div>
+
+        <!-- App Screen Content (Scrollable) -->
+        <div class="p-4 space-y-4 overflow-y-auto custom-scrollbar" style="height: 540px;">
+
+          <!-- Compliance Warning (License Expiry Warning) -->
+          <div id="app-compliance-warning"
+            class="bg-amber-950/60 border border-amber-900 text-[10px] text-amber-300 p-2.5 rounded-lg flex items-start gap-2 hidden">
+            <span class="font-bold text-sm leading-none">⚠</span>
+            <div>
+              <span class="font-bold">Action Needed:</span> Driver license expiring soon on <span
+                id="app-expiry-date"></span>!
+            </div>
+          </div>
+
+          <!-- Active Dispatch Card -->
+          <div class="bg-dark-800 p-4 rounded-xl border border-slate-700/60 relative overflow-hidden">
+            <div class="absolute -top-6 -right-6 w-16 h-16 bg-blue-500/10 rounded-full blur-2xl"></div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-[10px] font-semibold text-blue-400 uppercase tracking-wide">Current Assignment</span>
+              <span id="app-trip-status" class="px-1.5 py-0.5 text-[8px] font-bold rounded uppercase">No Active
+                Trip</span>
+            </div>
+
+            <div id="app-trip-details" class="space-y-2 text-xs">
+              <p class="text-slate-400">You currently have no active trip dispatches assigned to you.</p>
+            </div>
+
+            <!-- Dynamic Trip Actions Container -->
+            <div id="app-actions-panel" class="mt-4 hidden">
+              <!-- Rendered based on status -->
+            </div>
+          </div>
+
+          <!-- Local Expense Reporter (WorkManager Offline-First Demonstration) -->
+          <div class="bg-dark-800 p-4 rounded-xl border border-slate-800/80">
+            <h4 class="text-xs font-bold text-white mb-3">Quick Incident & Expenses</h4>
+            <div class="space-y-2 text-[10px]">
+              <div>
+                <label class="block text-slate-400 mb-1">Expense Type</label>
+                <select id="app-exp-cat"
+                  class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 focus:outline-none">
+                  <option value="Fuel">Fuel Stop</option>
+                  <option value="Toll">Toll Road</option>
+                  <option value="Misc">Incident/Other</option>
+                </select>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-slate-400 mb-1">Amount (₹)</label>
+                  <input id="app-exp-cost" type="number" placeholder="320"
+                    class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1">Detail (Qty/Desc)</label>
+                  <input id="app-exp-desc" type="text" placeholder="Expressway Toll"
+                    class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 focus:outline-none">
+                </div>
+              </div>
+              <button onclick="appSubmitExpense()"
+                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-1.5 rounded transition duration-200">
+                Log Expense (Offline Sync)
+              </button>
+              <div id="app-sync-indicator" class="text-[9px] text-slate-400 italic text-center mt-1 hidden">
+                ✓ Logged locally. Synced to manager server automatically.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // ==============================================
+    // CORE APPLICATION STATE
+    // ==============================================
+    const state = {
+      vehicles: [
+        { id: 'veh_0912380', reg: 'MH-12-PQ-1234', model: 'Tata Winger 2023', type: 'VAN', capacity: 500, odometer: 12450.5, acqCost: 1500000, status: 'Available', roi: 15.8 },
+        { id: 'veh_0912381', reg: 'MH-14-TR-5678', model: 'Tata Ultra T.7 Flatbed', type: 'TRUCK', capacity: 3000, odometer: 88400.0, acqCost: 2800000, status: 'Available', roi: 8.2 }
+      ],
+      drivers: [
+        { id: 'drv_102938', name: 'Rahul Sharma', dl: 'MH-12-2023-0045678', category: 'MCWG/LMV', expiry: '2027-12-31', contact: '+919876543210', score: 95.5, status: 'Available' },
+        { id: 'drv_102939', name: 'Kiran Patel', dl: 'MH-43-2022-0098765', category: 'HMV', expiry: '2026-07-25', contact: '+919123456789', score: 88.0, status: 'Available' } // Expiring soon
+      ],
+      trips: [
+        { id: 'trp_890123', source: 'Mumbai Warehouse A', destination: 'Pune Retail', vehicleId: 'veh_0912380', driverId: 'drv_102938', weight: 450, distance: 150.0, status: 'Dispatched' }
+      ],
+      maintenance: [],
+      expenses: {
+        fuel: 4500.00,
+        maint: 5000.00
+      }
+    };
+
+    // Apply starting status overrides based on loaded trip
+    const startingTrip = state.trips[0];
+    const startingVeh = state.vehicles.find(v => v.id === startingTrip.vehicleId);
+    const startingDrv = state.drivers.find(d => d.id === startingTrip.driverId);
+    if (startingVeh) startingVeh.status = 'On Trip';
+    if (startingDrv) startingDrv.status = 'On Trip';
+
+    let currentRbacRole = 'FLEET_MANAGER';
+
+    function changeRbacRole() {
+      currentRbacRole = document.getElementById('rbac-role-select').value;
+      alert(`Simulation role switched to: ${currentRbacRole}\nUI permissions updated accordingly.`);
+      render();
+    }
+
+    // Safety Officer action simulation
+    function suspendDriverToggle(drvId) {
+      const driver = state.drivers.find(d => d.id === drvId);
+      if (!driver) return;
+
+      if (currentRbacRole !== 'FLEET_MANAGER' && currentRbacRole !== 'SAFETY_OFFICER') {
+        alert('Error: Only Fleet Managers or Safety Officers can modify driver compliance status.');
+        return;
+      }
+
+      if (driver.status === 'Suspended') {
+        driver.status = 'Available';
+        alert(`Driver ${driver.name} unsuspended. Status restored to Available.`);
+      } else {
+        if (driver.status === 'On Trip') {
+          alert('Cannot suspend a driver while they are On Trip.');
+          return;
+        }
+        driver.status = 'Suspended';
+        alert(`Driver ${driver.name} suspended. Cannot be assigned to new trips.`);
+      }
+      render();
+    }
+
+    // ==============================================
+    // VIEW SWITCHER
+    // ==============================================
+    function switchView(view) {
+      const webBtn = document.getElementById('web-btn');
+      const appBtn = document.getElementById('app-btn');
+      const webView = document.getElementById('web-view');
+      const appView = document.getElementById('app-view');
+
+      if (view === 'web') {
+        webBtn.className = 'active-tab px-6 py-2.5 rounded-lg text-sm font-semibold tracking-wide transition-all duration-300';
+        appBtn.className = 'px-6 py-2.5 rounded-lg text-sm font-semibold tracking-wide text-slate-400 hover:text-white transition-all duration-300';
+        webView.classList.remove('hidden');
+        appView.classList.add('hidden');
+      } else {
+        appBtn.className = 'active-tab px-6 py-2.5 rounded-lg text-sm font-semibold tracking-wide transition-all duration-300';
+        webBtn.className = 'px-6 py-2.5 rounded-lg text-sm font-semibold tracking-wide text-slate-400 hover:text-white transition-all duration-300';
+        appView.classList.remove('hidden');
+        webView.classList.add('hidden');
+      }
+      render();
+    }
+
+    // ==============================================
+    // INTERACTIVE ACTIONS & EVENTS
+    // ==============================================
+
+    function handleDispatch(event) {
+      event.preventDefault();
+
+      if (currentRbacRole !== 'FLEET_MANAGER' && currentRbacRole !== 'DRIVER') {
+        alert('Access Denied: Only Fleet Managers and Drivers are permitted to dispatch trips.');
+        return;
+      }
+
+      const vehicleId = document.getElementById('dispatch-veh').value;
+      const driverId = document.getElementById('dispatch-drv').value;
+      const cargoWeight = parseFloat(document.getElementById('dispatch-weight').value);
+      const distance = parseFloat(document.getElementById('dispatch-dist').value);
+      const origin = document.getElementById('dispatch-origin').value || 'Mumbai';
+      const destination = document.getElementById('dispatch-dest').value || 'Pune';
+
+      if (!vehicleId || !driverId || isNaN(cargoWeight) || isNaN(distance)) {
+        alert('Please complete all dispatch details.');
+        return;
+      }
+
+      const vehicle = state.vehicles.find(v => v.id === vehicleId);
+      const driver = state.drivers.find(d => d.id === driverId);
+
+      // Business Rule Validation 1: Retired / In Shop Check
+      if (vehicle.status === 'Retired' || vehicle.status === 'In Shop') {
+        alert(`Error: Vehicle is currently ${vehicle.status} and cannot be dispatched.`);
+        return;
+      }
+
+      // Business Rule Validation 2: Driver Status / Expiry Check
+      const expiry = new Date(driver.expiry);
+      const today = new Date();
+      if (expiry < today || driver.status === 'Suspended') {
+        alert(`Error: Driver cannot be dispatched. Status: ${driver.status}, License Expiration: ${driver.expiry}`);
+        return;
+      }
+
+      // Business Rule Validation 3: Occupied Checks
+      if (vehicle.status === 'On Trip') {
+        alert('Error: Selected vehicle is already On Trip.');
+        return;
+      }
+      if (driver.status === 'On Trip') {
+        alert('Error: Selected driver is already On Trip.');
+        return;
+      }
+
+      // Business Rule Validation 4: Cargo Weight Check
+      if (cargoWeight > vehicle.capacity) {
+        alert(`Error: Cargo Weight (${cargoWeight} kg) exceeds maximum load capacity of vehicle (${vehicle.capacity} kg).`);
+        return;
+      }
+
+      // Successful Dispatch
+      const tripId = 'trp_' + Math.floor(100000 + Math.random() * 900000);
+      state.trips.push({
+        id: tripId,
+        source: origin,
+        destination: destination,
+        vehicleId: vehicle.id,
+        driverId: driver.id,
+        weight: cargoWeight,
+        distance: distance,
+        status: 'Dispatched'
+      });
+
+      // Change statuses automatically
+      vehicle.status = 'On Trip';
+      driver.status = 'On Trip';
+
+      // Check if driver is Rahul Sharma (drv_102938) who has the mobile app open to show fullscreen overlay Zomato alert
+      if (driver.id === 'drv_102938') {
+        document.getElementById('overlay-source').innerText = origin;
+        document.getElementById('overlay-dest').innerText = destination;
+        document.getElementById('overlay-weight').innerText = cargoWeight + " kg";
+        document.getElementById('overlay-veh-reg').innerText = vehicle.reg;
+        
+        const overlay = document.getElementById('app-overlay-alert');
+        overlay.classList.remove('translate-y-full');
+        overlay.classList.add('translate-y-0');
+      }
+
+      alert(`Dispatch Order ${tripId} successfully created. Statuses changed to 'On Trip'.`);
+      render();
+    }
+
+    function cancelTrip(tripId) {
+      const trip = state.trips.find(t => t.id === tripId);
+      if (!trip) return;
+
+      const vehicle = state.vehicles.find(v => v.id === trip.vehicleId);
+      const driver = state.drivers.find(d => d.id === trip.driverId);
+
+      // Restore statuses to Available
+      if (vehicle) vehicle.status = 'Available';
+      if (driver) driver.status = 'Available';
+
+      // Remove or mark cancel
+      trip.status = 'Cancelled';
+
+      alert(`Trip ${tripId} cancelled. Vehicle & Driver returned to 'Available'.`);
+      render();
+    }
+
+    function completeTrip(tripId) {
+      const trip = state.trips.find(t => t.id === tripId);
+      if (!trip) return;
+
+      const fuelLitres = 20;
+      const fuelCost = 2100; // INR calculation
+      const odoIncrement = trip.distance;
+
+      const vehicle = state.vehicles.find(v => v.id === trip.vehicleId);
+      const driver = state.drivers.find(d => d.id === trip.driverId);
+
+      if (vehicle) {
+        vehicle.status = 'Available';
+        vehicle.odometer = parseFloat((vehicle.odometer + odoIncrement).toFixed(1));
+      }
+      if (driver) {
+        driver.status = 'Available';
+      }
+
+      trip.status = 'Completed';
+
+      // Log expense
+      state.expenses.fuel += fuelCost;
+
+      alert(`Trip ${tripId} Completed.\nFuel Logged: ${fuelLitres}L (₹${fuelCost})\nOdometer updated for ${vehicle ? vehicle.reg : 'Vehicle'}.`);
+      render();
+    }
+
+    function sendToShop() {
+      if (currentRbacRole !== 'FLEET_MANAGER') {
+        alert('Access Denied: Only Fleet Managers are permitted to put vehicles in maintenance logs.');
+        return;
+      }
+
+      const vehId = document.getElementById('maint-veh-select').value;
+      const vehicle = state.vehicles.find(v => v.id === vehId);
+      if (!vehicle) return;
+
+      if (vehicle.status === 'On Trip') {
+        alert('Cannot send a vehicle to maintenance while it is On Trip.');
+        return;
+      }
+
+      vehicle.status = 'In Shop';
+      state.maintenance.push({
+        id: 'maint_' + Math.floor(100000 + Math.random() * 900000),
+        vehicleId: vehicle.id,
+        desc: 'Routine 10k Oil Change',
+        status: 'Open'
+      });
+
+      alert(`Vehicle ${vehicle.reg} sent to Maintenance Log. Status changed to 'In Shop'.`);
+      render();
+    }
+
+    function closeMaintenance(maintId) {
+      if (currentRbacRole !== 'FLEET_MANAGER') {
+        alert('Access Denied: Only Fleet Managers are permitted to resolve vehicle maintenance.');
+        return;
+      }
+
+      const log = state.maintenance.find(m => m.id === maintId);
+      if (!log) return;
+
+      const vehicle = state.vehicles.find(v => v.id === log.vehicleId);
+      if (vehicle && vehicle.status !== 'Retired') {
+        vehicle.status = 'Available';
+      }
+
+      log.status = 'Closed';
+      state.expenses.maint += 3500; // Mock INR cost of maintenance closure
+
+      alert(`Maintenance closed. Vehicle returned to 'Available'. Lifetime maintenance cost updated.`);
+      render();
+    }
+
+    // Mobile App Screen Button Interactions (Zomato-style transitions)
+    function appUpdateStatus(newStatus) {
+      const rahul = state.drivers.find(d => d.id === 'drv_102938');
+      const trip = state.trips.find(t => t.driverId === rahul.id && t.status !== 'Completed' && t.status !== 'Cancelled');
+      if (trip) {
+        trip.status = newStatus;
+        alert(`Trip status updated to: ${newStatus}`);
+        render();
+      }
+    }
+
+    function appAcceptOverlay() {
+      appDismissOverlay();
+      appUpdateStatus('En Route to Pickup');
+    }
+
+    function appDismissOverlay() {
+      const overlay = document.getElementById('app-overlay-alert');
+      overlay.classList.remove('translate-y-0');
+      overlay.classList.add('translate-y-full');
+    }
+
+    // Function to manually trigger a dummy push notification (Zomato overlay alert)
+    function triggerDummyNotification() {
+      const rahul = state.drivers.find(d => d.id === 'drv_102938');
+      const activeTrip = state.trips.find(t => t.driverId === rahul.id && t.status !== 'Completed' && t.status !== 'Cancelled');
+      
+      let source = "Mumbai Warehouse A";
+      let dest = "Pune Retail";
+      let weight = "450 kg";
+      let vehReg = "MH-12-PQ-1234";
+
+      if (activeTrip) {
+        source = activeTrip.source;
+        dest = activeTrip.destination;
+        weight = activeTrip.weight + " kg";
+        const v = state.vehicles.find(veh => veh.id === activeTrip.vehicleId);
+        if (v) vehReg = v.reg;
+      }
+      
+      document.getElementById('overlay-source').innerText = source;
+      document.getElementById('overlay-dest').innerText = dest;
+      document.getElementById('overlay-weight').innerText = weight;
+      document.getElementById('overlay-veh-reg').innerText = vehReg;
+      
+      const overlay = document.getElementById('app-overlay-alert');
+      overlay.classList.remove('translate-y-full');
+      overlay.classList.add('translate-y-0');
+    }
+
+    function appSubmitExpense() {
+      const type = document.getElementById('app-exp-cat').value;
+      const cost = parseFloat(document.getElementById('app-exp-cost').value) || 0;
+      const desc = document.getElementById('app-exp-desc').value;
+
+      if (type === 'Fuel') {
+        state.expenses.fuel += cost;
+      } else {
+        state.expenses.maint += cost;
+      }
+
+      const syncInd = document.getElementById('app-sync-indicator');
+      syncInd.classList.remove('hidden');
+      setTimeout(() => {
+        syncInd.classList.add('hidden');
+      }, 3000);
+
+      render();
+    }
+
+    // ==============================================
+    // RENDER FUNCTIONS
+    // ==============================================
+    function render() {
+      // 1. Render Dropdowns
+      const dispatchVeh = document.getElementById('dispatch-veh');
+      const dispatchDrv = document.getElementById('dispatch-drv');
+      const maintVeh = document.getElementById('maint-veh-select');
+
+      dispatchVeh.innerHTML = state.vehicles
+        .filter(v => v.status === 'Available')
+        .map(v => `<option value="${v.id}">${v.reg} - ${v.model} (Max: ${v.capacity}kg)</option>`)
+        .join('');
+
+      dispatchDrv.innerHTML = state.drivers
+        .filter(d => d.status === 'Available')
+        .map(d => `<option value="${d.id}">${d.name} (${d.category})</option>`)
+        .join('');
+
+      maintVeh.innerHTML = state.vehicles
+        .filter(v => v.status !== 'Retired' && v.status !== 'In Shop')
+        .map(v => `<option value="${v.id}">${v.reg} (${v.status})</option>`)
+        .join('');
+
+      // 2. Render KPIs
+      const activeVeh = state.vehicles.filter(v => v.status === 'On Trip').length;
+      const availVeh = state.vehicles.filter(v => v.status === 'Available').length;
+      const inMaint = state.vehicles.filter(v => v.status === 'In Shop').length;
+      const activeTripsCount = state.trips.filter(t => t.status !== 'Completed' && t.status !== 'Cancelled').length;
+      const pendingTripsCount = state.trips.filter(t => t.status === 'Draft').length;
+      const driversDuty = state.drivers.filter(d => d.status === 'On Trip').length;
+
+      const totalActiveAvail = activeVeh + availVeh;
+      const utilization = totalActiveAvail > 0 ? Math.round((activeVeh / totalActiveAvail) * 100) : 0;
+
+      document.getElementById('kpi-active-veh').innerText = activeVeh;
+      document.getElementById('kpi-avail-veh').innerText = availVeh;
+      document.getElementById('kpi-maint-veh').innerText = inMaint;
+      document.getElementById('kpi-active-trips').innerText = activeTripsCount;
+      document.getElementById('kpi-pend-trips').innerText = pendingTripsCount;
+      document.getElementById('kpi-drivers-duty').innerText = driversDuty;
+      document.getElementById('kpi-util').innerText = `${utilization}%`;
+
+      // 3. Render Vehicles List
+      document.getElementById('veh-total').innerText = state.vehicles.length;
+      document.getElementById('vehicles-list').innerHTML = state.vehicles.map(v => {
+        let badgeColor = 'bg-emerald-950 text-emerald-400 border-emerald-900';
+        if (v.status === 'On Trip') badgeColor = 'bg-blue-950 text-blue-400 border-blue-900';
+        if (v.status === 'In Shop') badgeColor = 'bg-amber-950 text-amber-500 border-amber-900';
+        if (v.status === 'Retired') badgeColor = 'bg-slate-900 text-slate-500 border-slate-800';
+
+        return `
+          <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800 flex justify-between items-center text-xs">
+            <div>
+              <p class="font-bold text-white">${v.reg}</p>
+              <p class="text-[10px] text-slate-400">${v.model} | Ld: ${v.capacity}kg</p>
+            </div>
+            <div class="text-right">
+              <span class="px-2 py-0.5 rounded border text-[9px] font-semibold ${badgeColor}">${v.status}</span>
+              <p class="text-[10px] text-slate-400 mt-1">${v.odometer} km</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 4. Render Drivers List
+      document.getElementById('drv-total').innerText = state.drivers.length;
+      document.getElementById('drivers-list').innerHTML = state.drivers.map(d => {
+        let badgeColor = 'bg-emerald-950 text-emerald-400 border-emerald-900';
+        if (d.status === 'On Trip') badgeColor = 'bg-blue-950 text-blue-400 border-blue-900';
+        if (d.status === 'Suspended') badgeColor = 'bg-rose-950 text-rose-400 border-rose-900';
+
+        // Expiry check
+        const isExpiring = new Date(d.expiry) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        const expiryBadge = isExpiring
+          ? `<span class="text-[9px] text-amber-500 bg-amber-950/40 border border-amber-900 px-1 rounded">Expiring: ${d.expiry}</span>`
+          : `<span class="text-[9px] text-slate-500">Exp: ${d.expiry}</span>`;
+
+        let safetyBtn = '';
+        if (currentRbacRole === 'FLEET_MANAGER' || currentRbacRole === 'SAFETY_OFFICER') {
+          const btnLabel = d.status === 'Suspended' ? 'Unsuspend' : 'Suspend';
+          const btnClass = d.status === 'Suspended' ? 'bg-emerald-950 text-emerald-400 border-emerald-900' : 'bg-rose-950 text-rose-400 border-rose-900';
+          safetyBtn = `<button onclick="suspendDriverToggle('${d.id}')" class="px-2 py-0.5 mt-1.5 rounded border text-[9px] font-semibold block w-full text-center ${btnClass}">${btnLabel}</button>`;
+        }
+
+        return `
+          <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800 flex justify-between items-center text-xs">
+            <div>
+              <p class="font-bold text-white">${d.name}</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">${d.dl} (${d.category})</p>
+              <div class="mt-1">${expiryBadge}</div>
+            </div>
+            <div class="text-right flex flex-col items-end">
+              <span class="px-2 py-0.5 rounded border text-[9px] font-semibold ${badgeColor}">${d.status}</span>
+              <p class="text-[10px] text-slate-300 mt-1">Score: <span class="text-emerald-400 font-bold">${d.score}</span></p>
+              ${safetyBtn}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 5. Render Active Maintenance Logs
+      document.getElementById('active-maint-logs').innerHTML = state.maintenance.map(log => {
+        const vehicle = state.vehicles.find(v => v.id === log.vehicleId);
+        if (log.status === 'Closed') return '';
+        return `
+          <div class="bg-amber-950/20 border border-amber-900/50 p-2.5 rounded-lg flex justify-between items-center">
+            <div>
+              <span class="font-bold text-slate-200 text-xs">${vehicle ? vehicle.reg : 'Unknown'}</span>
+              <span class="text-[10px] text-slate-400 block">${log.desc}</span>
+            </div>
+            <button onclick="closeMaintenance('${log.id}')" class="bg-amber-800 hover:bg-amber-700 text-white text-[10px] px-2.5 py-1 rounded">
+              Resolve
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      // 6. Render Active Trips Table
+      document.getElementById('trips-table-body').innerHTML = state.trips.map(t => {
+        const vehicle = state.vehicles.find(v => v.id === t.vehicleId);
+        const driver = state.drivers.find(d => d.id === t.driverId);
+
+        let statusBadge = 'bg-slate-800 text-slate-400';
+        if (t.status === 'Dispatched') statusBadge = 'bg-blue-950 text-blue-400 border border-blue-900';
+        if (t.status === 'En Route to Pickup') statusBadge = 'bg-amber-950 text-amber-500 border border-amber-900';
+        if (t.status === 'Loading Cargo') statusBadge = 'bg-cyan-950 text-cyan-400 border border-cyan-900';
+        if (t.status === 'In Transit') statusBadge = 'bg-indigo-950 text-indigo-400 border border-indigo-900';
+        if (t.status === 'Completed') statusBadge = 'bg-emerald-950 text-emerald-400 border border-emerald-900';
+        if (t.status === 'Cancelled') statusBadge = 'bg-rose-950 text-rose-400 border border-rose-900';
+
+        let actions = '';
+        if (t.status !== 'Completed' && t.status !== 'Cancelled') {
+          actions = `
+            <div class="flex gap-2 justify-end">
+              <button onclick="completeTrip('${t.id}')" class="bg-emerald-700 hover:bg-emerald-600 text-white px-2 py-1 rounded">Complete</button>
+              <button onclick="cancelTrip('${t.id}')" class="bg-rose-700 hover:bg-rose-600 text-white px-2 py-1 rounded">Cancel</button>
+            </div>
+          `;
+        } else {
+          actions = `<span class="text-slate-500 italic">-</span>`;
+        }
+
+        return `
+          <tr class="hover:bg-slate-900/40">
+            <td class="p-3 font-semibold text-slate-300">${t.id}</td>
+            <td class="p-3">${vehicle ? vehicle.reg : 'N/A'}</td>
+            <td class="p-3">${driver ? driver.name : 'N/A'}</td>
+            <td class="p-3">${t.source} → ${t.destination}</td>
+            <td class="p-3">${t.weight} kg</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-[9px] font-bold ${statusBadge}">${t.status}</span></td>
+            <td class="p-3 text-right">${actions}</td>
+          </tr>
+        `;
+      }).join('');
+
+      // Sync RBAC Select Value
+      document.getElementById('rbac-role-select').value = currentRbacRole;
+
+      // 7. Render Financial Values (RBAC restricted)
+      const financialCard = document.getElementById('summary-roi').parentNode.parentNode;
+      if (currentRbacRole !== 'FLEET_MANAGER' && currentRbacRole !== 'FINANCIAL_ANALYST') {
+        financialCard.classList.add('opacity-40');
+        document.getElementById('summary-roi').innerText = "[Restricted]";
+        document.getElementById('summary-fuel').innerText = "[Restricted]";
+        document.getElementById('summary-maint').innerText = "[Restricted]";
+      } else {
+        financialCard.classList.remove('opacity-40');
+        document.getElementById('summary-roi').innerText = "+15.8%";
+        document.getElementById('summary-fuel').innerText = `₹${state.expenses.fuel.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        document.getElementById('summary-maint').innerText = `₹${state.expenses.maint.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      }
+
+      // 8. Render Mobile App Details (Driver: Rahul Sharma)
+      const rahul = state.drivers.find(d => d.id === 'drv_102938');
+      document.getElementById('app-driver-name').innerText = rahul.name;
+      document.getElementById('app-expiry-date').innerText = rahul.expiry;
+
+      const appTrip = state.trips.find(t => t.driverId === rahul.id && t.status !== 'Completed' && t.status !== 'Cancelled');
+      const appTripDetails = document.getElementById('app-trip-details');
+      const appActionsPanel = document.getElementById('app-actions-panel');
+      const appTripStatus = document.getElementById('app-trip-status');
+
+      if (appTrip) {
+        const activeVeh = state.vehicles.find(v => v.id === appTrip.vehicleId);
+        appTripStatus.innerText = appTrip.status;
+
+        let statusBadgeClass = 'bg-slate-900 text-slate-500';
+        if (appTrip.status === 'Dispatched') statusBadgeClass = 'bg-blue-950 text-blue-400 border border-blue-900';
+        if (appTrip.status === 'En Route to Pickup') statusBadgeClass = 'bg-amber-950 text-amber-500 border border-amber-900';
+        if (appTrip.status === 'Loading Cargo') statusBadgeClass = 'bg-cyan-950 text-cyan-400 border border-cyan-900';
+        if (appTrip.status === 'In Transit') statusBadgeClass = 'bg-indigo-950 text-indigo-400 border border-indigo-900';
+
+        appTripStatus.className = `px-1.5 py-0.5 text-[8px] font-bold rounded uppercase ${statusBadgeClass}`;
+
+        appTripDetails.innerHTML = `
+          <div class="space-y-1 mt-1 text-[11px] text-slate-300">
+            <p><strong class="text-slate-400">Route:</strong> ${appTrip.source} to ${appTrip.destination}</p>
+            <p><strong class="text-slate-400">Vehicle:</strong> ${activeVeh ? activeVeh.reg : 'N/A'} (${activeVeh ? activeVeh.model : 'N/A'})</p>
+            <p><strong class="text-slate-400">Cargo Weight:</strong> ${appTrip.weight} kg / ${activeVeh ? activeVeh.capacity : 0} kg</p>
+            <p><strong class="text-slate-400">Distance:</strong> ${appTrip.distance} km</p>
+          </div>
+        `;
+
+        appActionsPanel.className = 'mt-4';
+        if (appTrip.status === 'Dispatched') {
+          appActionsPanel.innerHTML = `
+            <button onclick="appUpdateStatus('En Route to Pickup')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition text-xs shadow-lg shadow-blue-500/20">
+              Start Trip
+            </button>
+          `;
+        } else if (appTrip.status === 'En Route to Pickup') {
+          appActionsPanel.innerHTML = `
+            <button onclick="appUpdateStatus('Loading Cargo')" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 rounded transition text-xs shadow-lg shadow-amber-500/20">
+              Arrived at Pickup
+            </button>
+          `;
+        } else if (appTrip.status === 'Loading Cargo') {
+          appActionsPanel.innerHTML = `
+            <button onclick="appUpdateStatus('In Transit')" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 rounded transition text-xs shadow-lg shadow-cyan-500/20">
+              Out for Delivery
+            </button>
+          `;
+        } else if (appTrip.status === 'In Transit') {
+          appActionsPanel.innerHTML = `
+            <button onclick="completeTrip('${appTrip.id}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded transition text-xs shadow-lg shadow-emerald-500/20">
+              Mark Delivered
+            </button>
+          `;
+        }
+      } else {
+        appTripStatus.innerText = 'No Assignment';
+        appTripStatus.className = 'px-1.5 py-0.5 text-[8px] font-bold rounded uppercase bg-slate-900 text-slate-500';
+        appTripDetails.innerHTML = `<p class="text-slate-400">You currently have no active trip dispatches assigned to you.</p>`;
+        appActionsPanel.className = 'hidden';
+      }
+
+      // Check Kiran Patel for expired license banner representation
+      const kiran = state.drivers.find(d => d.id === 'drv_102939');
+      const appWarning = document.getElementById('app-compliance-warning');
+      const warningExpiry = document.getElementById('app-expiry-date');
+
+      appWarning.className = 'bg-amber-950/60 border border-amber-900 text-[10px] text-amber-300 p-2.5 rounded-lg flex items-start gap-2';
+      warningExpiry.innerText = kiran.expiry;
+    }
+
+    // Initialize UI
+    window.onload = function () {
+      render();
+    };
+  </script>
+</body>
+
+</html>

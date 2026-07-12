@@ -164,8 +164,6 @@ Thumbs.db
 *.sln
 *.sw?
 
-# Agent Documentation
-/agent/
 
 # Android
 .gradle/
