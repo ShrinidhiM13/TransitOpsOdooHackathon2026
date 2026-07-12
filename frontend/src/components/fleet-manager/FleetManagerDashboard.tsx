@@ -164,20 +164,6 @@ export default function FleetManagerDashboard({ token }: Props) {
 
   const handleExportPDF = () => {
     window.open(`${API_BASE}/api/analytics/export/pdf?token=${token}`, '_blank');
-    // Actually pass token as header via form post trick
-    const form = document.createElement('form');
-    form.method = 'GET';
-    form.action = `${API_BASE}/api/analytics/export/pdf`;
-    form.target = '_blank';
-    document.body.appendChild(form);
-    // Use fetch to get and open
-    fetch(`${API_BASE}/api/analytics/export/pdf`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.text())
-      .then(html => {
-        const win = window.open('', '_blank');
-        if (win) { win.document.write(html); win.document.close(); }
-      });
-    document.body.removeChild(form);
   };
 
   const filteredVehicles = vehicles.filter(v =>

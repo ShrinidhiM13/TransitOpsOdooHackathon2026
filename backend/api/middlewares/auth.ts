@@ -13,7 +13,13 @@ export interface AuthenticatedRequest extends Request {
 }
 
 export const authenticate = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
+  let authHeader = req.headers.authorization;
+
+  // Fallback for query parameter token validation (used in PDF/CSV exports)
+  if (!authHeader && req.query.token) {
+    authHeader = 'Bearer ' + req.query.token;
+  }
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({
       success: false,
