@@ -10,31 +10,16 @@ interface KPICardProps {
   subtitle?: string;
 }
 
-const COLOR_CONFIG = {
-  primary: {
-    color: '#6366f1',
-    bg: 'rgba(99, 102, 241, 0.12)',
-    border: 'rgba(99, 102, 241, 0.2)'
-  },
-  success: {
-    color: '#10b981',
-    bg: 'rgba(16, 185, 129, 0.12)',
-    border: 'rgba(16, 185, 129, 0.2)'
-  },
-  warning: {
-    color: '#f59e0b',
-    bg: 'rgba(245, 158, 11, 0.12)',
-    border: 'rgba(245, 158, 11, 0.2)'
-  },
-  error: {
-    color: '#ef4444',
-    bg: 'rgba(239, 68, 68, 0.12)',
-    border: 'rgba(239, 68, 68, 0.2)'
-  },
+const BRAND_COLORS = {
+  primary: '#6366f1',
+  success: '#10b981',
+  warning: '#f59e0b',
+  error: '#ef4444',
 };
 
 export default function KPICard({ label, value, icon: Icon, color = 'primary', subtitle }: KPICardProps) {
-  const conf = COLOR_CONFIG[color];
+  const accentColor = BRAND_COLORS[color];
+
   return (
     <div
       className="card"
@@ -42,43 +27,61 @@ export default function KPICard({ label, value, icon: Icon, color = 'primary', s
         marginBottom: 0,
         display: 'flex',
         flexDirection: 'column',
-        gap: '0.65rem',
+        gap: '0.5rem',
         border: '1px solid var(--border)',
-        borderLeft: `4px solid ${conf.color}`,
-        padding: '1.25rem 1.5rem',
-        background: 'var(--surface)',
+        padding: '1.25rem',
+        background: 'var(--surface-solid)',
+        borderRadius: '12px',
+        boxShadow: 'none', // Removed heavy/cheap shadows
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'border-color 0.2s ease, transform 0.2s ease',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)' }}>
+      {/* Subtle indicator dot instead of full colored borders */}
+      <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <span style={{
+          width: '6px',
+          height: '6px',
+          borderRadius: '50%',
+          backgroundColor: accentColor,
+          display: 'inline-block'
+        }} />
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+        <span style={{
+          fontSize: '0.72rem',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          color: 'var(--text-muted)'
+        }}>
           {label}
         </span>
-        {Icon && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
-            backgroundColor: conf.bg,
-            color: conf.color,
-            border: `1px solid ${conf.border}`
-          }}>
-            <Icon size={16} />
-          </div>
-        )}
-      </div>
-      <div>
-        <div style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.1 }}>
+        <div style={{
+          fontSize: '1.6rem',
+          fontWeight: 600,
+          color: 'var(--text-primary)',
+          lineHeight: '1.2',
+          letterSpacing: '-0.02em',
+        }}>
           {value}
         </div>
-        {subtitle && (
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '0.25rem', fontWeight: 500 }}>
-            {subtitle}
-          </div>
-        )}
       </div>
+
+      {subtitle && (
+        <div style={{
+          fontSize: '0.75rem',
+          color: 'var(--text-secondary)',
+          marginTop: 'auto',
+          paddingTop: '0.25rem',
+          borderTop: '1px solid var(--border)',
+          fontWeight: 400,
+        }}>
+          {subtitle}
+        </div>
+      )}
     </div>
   );
 }
