@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Truck, Loader2, ShieldAlert, Lock, Mail } from 'lucide-react';
-import { UserProfile, DriverProfile, Trip, UserRole } from '@/types';
+import { UserProfile, DriverProfile, Trip } from '@/types';
 import { API_BASE } from '@/hooks/useApi';
 import Header from '@/components/common/Header';
 import FleetManagerDashboard from '@/components/fleet-manager/FleetManagerDashboard';
@@ -32,7 +32,7 @@ export default function HomePortal() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [isOverlayDismissed, setIsOverlayDismissed] = useState(false);
-  const [simulatedRole, setSimulatedRole] = useState<UserRole | null>(null);
+
 
   // Login Form States
   const [loginEmail, setLoginEmail] = useState('');
@@ -173,7 +173,6 @@ export default function HomePortal() {
       const data = await res.json();
       if (data.success) {
         setUser(data.user);
-        setSimulatedRole(data.user.role);
         setDriver(data.driver);
         localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(data.user));
         localStorage.setItem(STORAGE_KEYS.DRIVER, JSON.stringify(data.driver));
@@ -188,7 +187,6 @@ export default function HomePortal() {
       if (cachedUser) {
         const u = JSON.parse(cachedUser);
         setUser(u);
-        setSimulatedRole(u.role);
       }
       if (cachedDriver) setDriver(JSON.parse(cachedDriver));
     }
@@ -234,21 +232,21 @@ export default function HomePortal() {
 
   // Polling for driver status updates
   useEffect(() => {
-    if (!token || isOffline || simulatedRole !== 'DRIVER') return;
+    if (!token || isOffline || user?.role !== 'DRIVER') return;
     const interval = setInterval(() => {
       fetchActiveTrip(token);
     }, 8000);
     return () => clearInterval(interval);
-  }, [token, isOffline, simulatedRole, fetchActiveTrip]);
+  }, [token, isOffline, user?.role, fetchActiveTrip]);
 
   // Alert siren when driver gets new dispatch
   useEffect(() => {
-    if (simulatedRole === 'DRIVER' && activeTrip && activeTrip.status === 'Dispatched' && !isOverlayDismissed) {
+    if (user?.role === 'DRIVER' && activeTrip && activeTrip.status === 'Dispatched' && !isOverlayDismissed) {
       playAlertSound();
       const soundInterval = setInterval(playAlertSound, 3000);
       return () => clearInterval(soundInterval);
     }
-  }, [activeTrip, simulatedRole, isOverlayDismissed, playAlertSound]);
+  }, [activeTrip, user?.role, isOverlayDismissed, playAlertSound]);
 
   const handleThemeToggle = () => {
     const nextTheme = theme === 'light' ? 'dark' : 'light';
@@ -298,7 +296,6 @@ export default function HomePortal() {
     setDriver(null);
     setActiveTrip(null);
     setIsOverlayDismissed(false);
-    setSimulatedRole(null);
   };
 
   // Driver Status progression helper
@@ -503,26 +500,24 @@ export default function HomePortal() {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header
         user={user}
-        simulatedRole={simulatedRole}
         isOffline={isOffline}
         syncing={syncing}
         theme={theme}
         onThemeToggle={handleThemeToggle}
         onLogout={handleLogout}
-        onRoleChange={(r) => setSimulatedRole(r as UserRole)}
       />
 
       <main className="container-wide" style={{ flex: 1, padding: '1.5rem' }}>
-        {simulatedRole === 'FLEET_MANAGER' && (
+        {user?.role === 'FLEET_MANAGER' && (
           <FleetManagerDashboard token={token} />
         )}
-        {simulatedRole === 'SAFETY_OFFICER' && (
+        {user?.role === 'SAFETY_OFFICER' && (
           <SafetyOfficerDashboard token={token} />
         )}
-        {simulatedRole === 'FINANCIAL_ANALYST' && (
+        {user?.role === 'FINANCIAL_ANALYST' && (
           <FinancialAnalystDashboard token={token} />
         )}
-        {simulatedRole === 'DRIVER' && user && (
+        {user?.role === 'DRIVER' && user && (
           <div style={{ maxWidth: '600px', margin: '0 auto' }}>
             <DriverDashboard
               token={token}

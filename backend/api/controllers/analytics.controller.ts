@@ -492,7 +492,7 @@ export const exportPDF = async (req: Request, res: Response, next: NextFunction)
 <body>
   <div class="header">
     <div>
-      <h1>🚛 TransitOps Fleet Report</h1>
+      <h1> TransitOps Fleet Report</h1>
       <p>Comprehensive Fleet Operations & Analytics Report</p>
     </div>
     <div style="text-align:right">
