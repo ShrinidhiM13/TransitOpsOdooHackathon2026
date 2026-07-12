@@ -10,6 +10,7 @@ import tripRoutes from './routes/trip.routes';
 import maintenanceRoutes from './routes/maintenance.routes';
 import expenseRoutes from './routes/expense.routes';
 import analyticsRoutes from './routes/analytics.routes';
+import pushRoutes from './routes/push.routes';
 import { getKPIs } from './controllers/analytics.controller';
 import { authenticate } from './middlewares/auth';
 
@@ -65,6 +66,7 @@ app.use('/api/trips', tripRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/push', pushRoutes);
 // Legacy alias: /api/dashboard/kpis maps to analytics KPIs for backward compatibility
 app.get('/api/dashboard/kpis', authenticate, getKPIs);
 

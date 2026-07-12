@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import pool from '../config/db';
+import { sendPushToUser } from '../services/pushNotification.service';
 
 const tripCreateSchema = z.object({
   source: z.string().min(1),
@@ -162,6 +163,16 @@ export const dispatchTrip = async (req: Request, res: Response, next: NextFuncti
     conn.release();
 
     const [updatedTrips]: any = await pool.execute('SELECT * FROM trips WHERE id = ?', [id]);
+
+    // Fire-and-forget push notification to the driver (non-blocking)
+    if (driver.userId) {
+      sendPushToUser(driver.userId, {
+        title: '🚛 New Trip Dispatched!',
+        body: `You have been assigned a trip from ${trip.source} to ${trip.destination}. Tap to open TransitOps.`,
+        icon: '/icon-192.png',
+        data: { tripId: id, url: '/' },
+      }).catch(() => {}); // silently ignore push errors
+    }
 
     return res.status(200).json({
       success: true,

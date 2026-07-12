@@ -10,6 +10,7 @@ import SafetyOfficerDashboard from '@/components/safety-officer/SafetyOfficerDas
 import FinancialAnalystDashboard from '@/components/financial-analyst/FinancialAnalystDashboard';
 import DriverDashboard from '@/components/driver/DriverDashboard';
 import Alert from '@/components/common/Alert';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
 
 const STORAGE_KEYS = {
   TOKEN: 'transitops_driver_token',
@@ -32,6 +33,9 @@ export default function HomePortal() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [isOverlayDismissed, setIsOverlayDismissed] = useState(false);
+
+  // Call Web Push Notification Hook for Driver
+  usePushNotifications(token, user?.role);
 
 
   // Login Form States
