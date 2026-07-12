@@ -114,6 +114,17 @@ export const getMe = async (req: AuthenticatedRequest, res: Response, next: Next
         message: 'Unauthorized',
       });
     }
+
+    if (req.user.role === 'DRIVER') {
+      const [rows]: any = await pool.query('SELECT * FROM drivers WHERE userId = ?', [req.user.id]);
+      const driver = rows[0];
+      return res.status(200).json({
+        success: true,
+        user: req.user,
+        driver: driver || null,
+      });
+    }
+
     return res.status(200).json({
       success: true,
       user: req.user,

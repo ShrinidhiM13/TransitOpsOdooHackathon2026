@@ -41,7 +41,7 @@ Load active driver configurations and compliance metrics.
 ### 2.1 Tasks & Deliverables
 * **UI Layout:** Design a main dashboard displaying the Driver's details (Name, Contact, License Expiry Date, Safety Score).
 * **Compliance Checks:** Create visual warning banners if the license expiration date is under 30 days away.
-* **Backend Connection:** Implement `GET /api/drivers/me` or similar endpoint integration to fetch stats dynamically.
+* **Backend Connection:** Fetch driver metrics dynamically using `GET /api/auth/me`. The backend returns a nested `driver` object (`licenseExpiryDate`, `safetyScore`, etc.) if the user's role is `DRIVER`.
 
 ### 2.2 Verification & Testing
 * **Test Case 1:** Verify the data displayed matches database records for the driver.
@@ -61,11 +61,11 @@ Display live cargo dispatches, trigger notification alerts on delivery assignmen
   * Display this layout over any active apps or when the screen is locked, ensuring the driver never misses a new dispatch until they accept/acknowledge or dismiss it.
 * **Active Trip Screen:** Display the active trip card containing Source, Destination, Cargo Weight, Route info, and a step-by-step progress timeline.
 * **Zomato-style Lifecycle Actions:** Implement a sequential button interface:
-  * State 1: **Dispatched** -> Action: **"Start Trip"** (updates status to 'En Route to Pickup').
-  * State 2: **En Route to Pickup** -> Action: **"Arrived at Pickup"** (updates status to 'Loading Cargo').
-  * State 3: **Loading Cargo** -> Action: **"Out for Delivery"** (updates status to 'In Transit').
-  * State 4: **In Transit** -> Action: **"Mark Delivered"** (switches screen to Step 5 Completion Flow).
-* **Offline Caching:** Cache trip details in Room database for offline status transitions and auto-sync when network reconnects.
+    * State 1: **Dispatched** -> Action: **"Start Trip"** (calls `PUT /api/trips/:id/status` with body `{ "status": "En Route to Pickup" }`).
+    * State 2: **En Route to Pickup** -> Action: **"Arrived at Pickup"** (calls `PUT /api/trips/:id/status` with body `{ "status": "Loading Cargo" }`).
+    * State 3: **Loading Cargo** -> Action: **"Out for Delivery"** (calls `PUT /api/trips/:id/status` with body `{ "status": "In Transit" }`).
+    * State 4: **In Transit** -> Action: **"Mark Delivered"** (transitions screen to Step 5 Completion Flow).
+* **Offline Caching:** Cache trip details and status updates in Room database, synchronizing with the server once network is restored.
 
 ### 3.2 Verification & Testing
 * **Test Case 1:** Verify that assigning a trip on the manager dashboard triggers a device notification alert on the mobile app.
@@ -79,9 +79,8 @@ Empower drivers to report fuel stops and expenses on the road, even without stab
 
 ### 4.1 Tasks & Deliverables
 * **Forms:** Build easy-to-use Compose forms for:
-  * Fuel logging: Liters, cost per liter, total cost.
-  * Expense logging: Amount, category (Tolls, Maintenance, Misc), and description.
-* **Sync Engine:** Store these entries locally in Room database if offline. Implement a background worker (using WorkManager) to automatically upload cached data when the network is restored.
+    * Expense logging: Amount, category (`Toll` | `Fuel` | `Cleaning` | `Misc`), description, and date (calls `POST /api/expenses`).
+* **Sync Engine:** Cache expense reports in Room database if offline. Implement a background worker (using WorkManager) to automatically execute `POST /api/expenses` queries when connectivity is restored.
 
 ### 4.2 Verification & Testing
 * **Test Case 1:** Input a fuel log while online -> Verify API receives payload immediately.
@@ -94,9 +93,9 @@ Wrap up deliveries and release resources.
 
 ### 5.1 Tasks & Deliverables
 * **Completion Interface:** Implement a "Complete Trip" form.
-* **Form Inputs:** Input final odometer reading.
-* **Backend Action:** Call `/api/trips/:id/complete` with final details.
-* **State Reset:** Ensure UI transitions back to the "Available" state and prepares the driver for new assignments.
+  * **Form Inputs:** Input `finalOdometer`, `fuelConsumedLiters`, and `fuelCost`.
+  * **Backend Action:** Execute `PUT /api/trips/:id/complete` passing final inputs in the request body.
+  * **State Reset:** Ensure UI transitions back to the "Available" home dashboard once completed, preparing the driver and vehicle for new dispatches.
 
 ### 5.2 Verification & Testing
 * **Test Case 1:** Complete a trip -> Verify that odometer updates on server.
