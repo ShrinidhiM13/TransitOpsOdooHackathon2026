@@ -5,9 +5,10 @@ object NetworkConfig {
      * Swap this flag to toggle between local offline mock data and the real server endpoints.
      */
     const val USE_MOCK_DATA = false
-    
+
     /**
-     * Target API URL. 10.0.2.2 points to localhost of the host machine from the Android emulator.
+     * Production API URL — deployed on Vercel.
+     * All /api/* routes are handled by the Express backend via vercel.json routing.
      */
-    const val BASE_URL = "http://10.0.2.2:3000"
+    const val BASE_URL = "https://transit-ops-odoo-hackathon2026.vercel.app"
 }
