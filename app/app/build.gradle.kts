@@ -77,6 +77,9 @@ dependencies {
     // WorkManager (Zomato-style background sync & alerts)
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
+    // Secure Storage for JWT token persistence
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
     // Testing
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
