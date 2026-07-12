@@ -16,8 +16,15 @@ import { authenticate } from './middlewares/auth';
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Security Middleware: Set security-related HTTP headers
-app.use(helmet());
+// Security Middleware: Set security-related HTTP headers with cross-origin exceptions for PDF printing
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
+  })
+);
 
 // CORS Configuration
 app.use(cors());

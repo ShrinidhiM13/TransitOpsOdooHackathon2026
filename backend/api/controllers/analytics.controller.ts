@@ -498,7 +498,7 @@ export const exportPDF = async (req: Request, res: Response, next: NextFunction)
     <div style="text-align:right">
       <p style="font-size:13px;font-weight:600;">Generated: ${generatedAt} IST</p>
       <p style="margin-top:6px;" class="no-print">
-        <button onclick="window.print()" style="padding:8px 16px;background:white;color:#1a73e8;border:none;border-radius:6px;font-weight:700;cursor:pointer;">🖨 Print / Save as PDF</button>
+        <button id="printBtn" style="padding:8px 16px;background:white;color:#1a73e8;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;">🖨 Print / Save as PDF</button>
       </p>
     </div>
   </div>
@@ -578,6 +578,9 @@ export const exportPDF = async (req: Request, res: Response, next: NextFunction)
   <div class="footer">
     <p>TransitOps Enterprise Fleet Platform &nbsp;|&nbsp; Report generated on ${generatedAt} IST &nbsp;|&nbsp; Confidential – Internal Use Only</p>
   </div>
+  <script>
+    document.getElementById('printBtn').addEventListener('click', function() { window.print(); });
+  </script>
 </body>
 </html>`;
 
